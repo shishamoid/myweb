@@ -1,10 +1,17 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+import { ChatComponent } from './chat/chat.component';
+import { MainComponent } from './main/main.component';
+import { AppComponent } from './app.component';
 
-const routes: Routes = [];
-
+const myRoutes: Routes = [
+  //{path:"",component: AppComponent},
+  { path: 'main', component: MainComponent },
+  { path: 'chat', component: ChatComponent},
+];
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+    //RouterModule.forRoot(myRoutes,{useHash:true})
+  imports: [RouterModule.forRoot(myRoutes ,{useHash:true})],
   exports: [RouterModule]
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}
