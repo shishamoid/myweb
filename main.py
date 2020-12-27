@@ -10,7 +10,7 @@ from flask_socketio import SocketIO,emit,send
 #import bbbserial as bbb
 from threading import Thread
 import time
-
+import socket
 async_mode = None
 
 
@@ -21,6 +21,7 @@ app.config['SECRET_KEY'] = 'secret!'
 ws = GeventWebSocket(app)
 # Flaskオブジェクト、async_modeを指定して、SocketIOサーバオブジェクトを生成
 socketio = SocketIO(app, async_mode=async_mode)
+queue_size = 10
 
 app = Flask(__name__, static_url_path='', static_folder='./dist/myweb')
 app.config['JSON_AS_ASCII'] = False
@@ -29,6 +30,32 @@ app.config['JSON_AS_ASCII'] = False
 def getAngular():
     #print(request.environ)
     print(request.url)
+    return app.send_static_file('index.html')
+
+
+@app.route('/chat', methods=['GET'])
+def getchat():
+    print("this is a chat event")
+    data = request.get_data()
+    a = data.decode("utf-8")
+    print(request.environ)
+    print(a)
+
+    #print(request.environ.get("wsgi.websocket"))
+    #print(request.data.decode("utf-8"))
+    if request.environ.get("wsgi.websocket"):
+        print("chat accessed")
+        host = "localhost"
+        port = 5001
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind((host, port))
+        server.listen(queue_size)
+        client, address = server.accept()
+        received_packet = client.recv()
+        print(received_packet)
+        receive = receive.decode("utf-8")
+        print("connected!@!")
+        print(received_packet)
 
     return app.send_static_file('index.html')
 
@@ -41,7 +68,7 @@ def namepage(name):
     return app.send_static_file("index.html")"""
     #return app.send_static_file("index.html")
 
-@ws.route('/#/chat')
+@ws.route('/chat')
 def chat(ws):
     print(ws)
     print("ringos")
@@ -65,10 +92,11 @@ def chat(ws):
     del users[ws.id]
     return
 
-"""@socketio.on('connect', namespace='/chat')
+
+@socketio.on('connect', namespace='/chat')
 def test_connect():
     print('Client connected')
-    return "poke" """
+    return "poke"
 
 if __name__ == '__main__':
     app.debug = True

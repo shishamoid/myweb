@@ -9,10 +9,10 @@ const myRoutes: Routes = [
   { path: 'main', component: MainComponent },
   { path: 'chat', component: ChatComponent},
 ];
+
 @NgModule({
     //RouterModule.forRoot(myRoutes,{useHash:true})
-  imports: [RouterModule.forRoot(myRoutes ,{useHash:true})],
-  //imports: [RouterModule.forRoot(myRoutes)],
+  imports: [RouterModule.forRoot(myRoutes)],
   exports: [RouterModule]
 })
 export class AppRoutingModule {}

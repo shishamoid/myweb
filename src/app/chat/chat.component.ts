@@ -37,6 +37,8 @@ export class WebSocketService {
         console.log("this is a data ")
         console.log(data)
         if (ws.readyState === WebSocket.OPEN) {
+          console.log("繋がったから送る")
+          console.log(data)
           ws.send(JSON.stringify(data));
         }
       },
@@ -71,13 +73,16 @@ export class ChatService {
   private messages: Subject<ChatMessage>;
 
   private chatUrl(roomNumber: string, name: string): string {
-    return "ws://localhost:5000/#/chat/${roomNumber}?user_name=${name}";   // -- ① WebSocket サーバーの接続先です
+    console.log("this is url!!!")
+    console.log(roomNumber,name)
+    return `ws://localhost:5001/chat`;   // -- ① WebSocket サーバーの接続先です
   }
 
   constructor(private ws: WebSocketService) {
     console.log("initialized")
   }
   connect(roomNumber: string, name: string): Subject<ChatMessage> { // -- ② チャットの接続。 WebSocketService の connect を呼び出し、 Subject を返します。
+    console.log(roomNumber,name)
     return this.messages = <Subject<ChatMessage>>this.ws
       .connect(this.chatUrl(roomNumber, name))
       .map((response: MessageEvent): ChatMessage => {
@@ -91,13 +96,13 @@ export class ChatService {
     console.log(this.messages)
     console.log("defined")
     this.messages.next(this.createMessage(name, message));
+    console.log("sent")
   }
 
   private createMessage(name: string, message: string): ChatMessage {
     return new ChatMessage(name, message, false);
   }
 }
-
 
 @Component({
   selector: 'app-chat',
@@ -124,15 +129,16 @@ export class ChatComponent implements OnInit {
     this.route.params.forEach((params: Params) => {
       this.roomNumber = params['roomNumber'];
       console.log("this is roolnum")
-      console.log(this.roomNumber)
       this.roomNumber = "123"
+
+      console.log(this.roomNumber)
     });
 
     this.route.queryParams.forEach((params: Params) => {
       this.name = params['name'];
+      this.name = "456"
       console.log("this is username")
       console.log(this.name)
-      this.name = "456"
     });
 
     this.chatService.connect(this.roomNumber, this.name).subscribe(msg => {
