@@ -23,7 +23,7 @@ export class WebSocketService {
   }
 
   private create(url: string): Subject<MessageEvent> {
-    const ws = new WebSocket(url);　　// -- ③ WebSocket オブジェクトを生成します
+    const ws = new WebSocket(url); // -- ③ WebSocket オブジェクトを生成します
     const observable = Observable.create((obs: Observer<MessageEvent>) => { // -- ④ Observable オブジェクトを生成します
       ws.onmessage = obs.next.bind(obs);
       ws.onerror = obs.error.bind(obs);

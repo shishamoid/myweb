@@ -32,14 +32,28 @@ def getAngular():
     print(request.url)
     return app.send_static_file('index.html')
 
+@app.route("/login",methods=["GET"])
+def get_info():
+    print("got account info")
+    print(request.environ)
+
+    if request.environ.get("QUERY_STRING"):
+        print(request.environ.get("QUERY_STRING"))
+    pr = request.get_data()
+    print(pr)
+    return app.send_static_file("index.html")
+
+@app.route("/login",methods=["POST"])
+def get_account():
+    print("asdfsdf")
+    return app.send_static_file("index.html")
 
 @app.route('/chat', methods=['GET'])
 def getchat():
     print("this is a chat event")
     data = request.get_data()
     a = data.decode("utf-8")
-    print(request.environ)
-    print(a)
+    #print(request.environ)
 
     #print(request.environ.get("wsgi.websocket"))
     #print(request.data.decode("utf-8"))

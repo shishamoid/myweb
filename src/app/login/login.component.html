@@ -1,0 +1,19 @@
+<p>login works!</p>
+<form [formGroup]="loginform" (ngSubmit)="onSubmit(loginform.value)">
+
+  <div>
+    <label for="name">
+      roomnumber
+    </label>
+    <input id="name" type="text" formControlName="roomnumber">
+  </div>
+
+  <div>
+    <label for="address">
+      username
+    </label>
+    <input id="address" type="text" formControlName="username">
+  </div>
+  <button class="button" type="submit">Purchase</button>
+
+</form>
