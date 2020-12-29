@@ -11,20 +11,23 @@ from flask_socketio import SocketIO,emit,send
 from threading import Thread
 import time
 import socket
+from flask_cors import CORS
+import json
 async_mode = None
 
 
-# Flaskオブジェクトを生成し、セッション情報暗号化のキーを指定
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
+# Flaskオブジェクトを生成し、セッション情報暗号化のキーを指
 
-ws = GeventWebSocket(app)
+
+#ws = GeventWebSocket(app)
 # Flaskオブジェクト、async_modeを指定して、SocketIOサーバオブジェクトを生成
-socketio = SocketIO(app, async_mode=async_mode)
+#socketio = SocketIO(app, async_mode=async_mode)
 queue_size = 10
 
 app = Flask(__name__, static_url_path='', static_folder='./dist/myweb')
 app.config['JSON_AS_ASCII'] = False
+app.config['SECRET_KEY'] = 'secret!'
+CORS(app)
 
 @app.route('/', methods=['GET'])
 def getAngular():
@@ -35,17 +38,20 @@ def getAngular():
 @app.route("/login",methods=["GET"])
 def get_info():
     print("got account info")
-    print(request.environ)
+    #print(request.environ)
 
     if request.environ.get("QUERY_STRING"):
         print(request.environ.get("QUERY_STRING"))
     pr = request.get_data()
-    print(pr)
+    #print(pr)
     return app.send_static_file("index.html")
 
 @app.route("/login",methods=["POST"])
 def get_account():
     print("asdfsdf")
+    print(type(request.get_data().decode()))
+    logininfo = json.loads(request.get_data().decode())
+    print(type(logininfo))
     return app.send_static_file("index.html")
 
 @app.route('/chat', methods=['GET'])
@@ -73,13 +79,22 @@ def getchat():
 
     return app.send_static_file('index.html')
 
+"""@app.route("/<string:name>",methods=['GET',"POST"])
+def namepage(name):
+    if name=="/login":
+        print("this is login")
+        return app.send_static_file("index.html")
+
+    return app.static_url_path"""
+    #return app.send_static_file("index.html")
+
 #print(request.environ)
 """@app.route("/<string:name>",methods=['GET'])
 def namepage(name):
     print(request)
     print("name",name)
     print("aaaaaaaaaa")
-    return app.send_static_file("index.html")"""
+    return app.send_static_file("index.html")
     #return app.send_static_file("index.html")
 
 @ws.route('/chat')
@@ -104,13 +119,14 @@ def chat(ws):
                 users[id].send(msg)
 
     del users[ws.id]
-    return
+    return"""
 
-
+"""
 @socketio.on('connect', namespace='/chat')
 def test_connect():
     print('Client connected')
     return "poke"
+    """
 
 if __name__ == '__main__':
     app.debug = True

@@ -7,8 +7,9 @@ import { FormGroup, FormControl } from '@angular/forms';
 import {ActivatedRoute, Params} from '@angular/router';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import {Subject, Observable, Observer} from 'rxjs/Rx';
-
+import {Subject,Observer} from 'rxjs/Rx';
+import { catchError, map, tap,retry } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -21,23 +22,44 @@ export class LoginComponent implements OnInit {
   loginform : FormGroup;
   router : Router;
   query : string;
+  http : HttpClient;
 
-  constructor(router :Router, private http : HttpClient
+  constructor(router :Router, http : HttpClient
    ) {
     this.router = router,
+    this.http = http,
     this.loginform = new FormGroup({
     username: new FormControl(''),
     roomnumber: new FormControl(''),
   });
    }
-   getdata(data : logininfo): Observable<Response[]>{
-     var requestdata = data.roomnumber + data.username
-     return this.http.post<Response[]>("/login",requestdata)
+   handleError<T>(operation = 'operation', result?: T) {
+    return (error: any): Observable<T> => {
+
+      // TODO: リモート上のロギング基盤にエラーを送信する
+      console.error(error); // かわりにconsoleに出力
+
+      // TODO: ユーザーへの開示のためにエラーの変換処理を改善する
+      console.log(`${operation} failed: ${error.message}`);
+
+      // 空の結果を返して、アプリを持続可能にする
+      return of(result as T);
+    };
+  }
+
+   postdata(data : logininfo){
+     //var requestdata = JSON.parse(`{"roomnumber": ${data.roomnumber}, "username": ${data.username}}`)
+     var requestdata = JSON.stringify({"roomnumber" : data.roomnumber,"username": data.username})
+     console.log("this is requestdata",requestdata)
+     console.log(this.http.post("/login",requestdata).subscribe(responsedata => console.log(responsedata)))
+     return this.http.post<logininfo>("/login",requestdata).pipe(tap(response => console.log("this is response",response)),catchError(this.handleError))
    }
 
    onSubmit(data : logininfo){
-     var response = this.getdata(data)
-     console.log("got data",response)
+     //this.getdata(data)
+     var response_post = this.postdata(data)
+     console.log("post data",response_post)
+     //var response = this.getdata(data)
      //this.router.navigate(["/login"],{queryParams:{username : `${data.username}`,roomnumber: `${data.roomnumber}`}})
    }
 
