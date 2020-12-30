@@ -1,10 +1,15 @@
 import {AfterViewInit, Component, ElementRef, ViewChild,OnInit} from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
-import {ActivatedRoute, Params} from '@angular/router';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 import {Subject, Observable, Observer} from 'rxjs/Rx';
 import {Injectable} from '@angular/core';
 //import {Md5} from 'ts-md5/dist/md5';
 import {WebSocketSubject } from 'rxjs/webSocket';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import {LoginComponent} from '../login/login.component'
+import {of} from 'rxjs';
+import { catchError, map, tap,retry } from 'rxjs/operators';
+import { FormGroup, FormControl } from '@angular/forms';
 
 @Injectable({
   providedIn: 'root'
@@ -51,16 +56,16 @@ export class WebSocketService {
 
 
 export class ChatMessage {
- userName: string;
+ username: string;
  text: string;
  systemFlag: boolean;
 
  constructor(
-   userName: string,
+   username: string,
    text: string,
    systemFlag: boolean
  ) {
-   this.userName = userName;
+   this.username = username;
    this.text = text;
    this.systemFlag = systemFlag;
  }
@@ -72,19 +77,20 @@ export class ChatMessage {
 export class ChatService {
   private messages: Subject<ChatMessage>;
 
-  private chatUrl(roomNumber: string, name: string): string {
+  private chatUrl(roomnumber: string, username: string): string {
     console.log("this is url!!!")
-    console.log(roomNumber,name)
-    return `ws://localhost:5001/chat`;   // -- ① WebSocket サーバーの接続先です
+    console.log(roomnumber,username)
+    return `ws://localhost:5001/chat${username}&${roomnumber}`;   // -- ① WebSocket サーバーの接続先です
   }
+
 
   constructor(private ws: WebSocketService) {
     console.log("initialized")
   }
-  connect(roomNumber: string, name: string): Subject<ChatMessage> { // -- ② チャットの接続。 WebSocketService の connect を呼び出し、 Subject を返します。
-    console.log(roomNumber,name)
+  connect(roomnumber: string, name: string): Subject<ChatMessage> { // -- ② チャットの接続。 WebSocketService の connect を呼び出し、 Subject を返します。
+    console.log(roomnumber,name)
     return this.messages = <Subject<ChatMessage>>this.ws
-      .connect(this.chatUrl(roomNumber, name))
+      .connect(this.chatUrl(roomnumber, name))
       .map((response: MessageEvent): ChatMessage => {
         const data = JSON.parse(response.data) as ChatMessage;
         return data;
@@ -111,42 +117,68 @@ export class ChatService {
 })
 
 export class ChatComponent implements OnInit {
-  roomNumber: string;
-  name: string;
+  roomnumber: string;
+  username: string;
   subject: WebSocketSubject<MessageEvent>
+
   //message: Subject<unknown>
   //@ViewChild("test") test: ElementRef
+  messages: ChatModel[] = new Array(); // -- ① htmlで利用するオブジェクトです\
+  response : string;
+  roomnumberform : FormGroup
 
-  messages: ChatModel[] = new Array(); // -- ① htmlで利用するオブジェクトです
+  handleError<T>(operation = 'operation', result?: T) {
+   return (error: any): Observable<T> => {
+     console.error(error);
+     console.log(`${operation} failed: ${error.message}`);
+     return of(result as T);
+   };
+ }
+
+
+
+ roomrequest(roomnumber:string,username:string){
+   //websocket接続要求
+   //var requestdata = JSON.stringify(`{username:${username},roomnumber:${roomnumber}}`)
+   var requestdata = JSON.stringify({"username" : username,"roomnumber":roomnumber})
+   console.log("requestdata",requestdata)
+   return this.http.post("/chat",requestdata).pipe(catchError(this.handleError))
+ }
 
   constructor(
+    private http:HttpClient,
     private chatService: ChatService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
   ) {
+    this.roomnumberform = new FormGroup({
+    roomnumber: new FormControl(''),
+    });
   }
+
   ngOnInit(){
     console.log("next")
-    this.route.params.forEach((params: Params) => {
-      this.roomNumber = params['roomNumber'];
-      console.log("this is roolnum")
-      this.roomNumber = "123"
 
-      console.log(this.roomNumber)
+    this.route.queryParamMap.subscribe((params: ParamMap) => {
+    //this.roomnumber = params.get('roomnumber')||"";
+    this.username = params.get("username") || "";
+
     });
+  }
 
-    this.route.queryParams.forEach((params: Params) => {
-      this.name = params['name'];
-      this.name = "456"
-      console.log("this is username")
-      console.log(this.name)
-    });
+  startchat(data :any){
 
-    this.chatService.connect(this.roomNumber, this.name).subscribe(msg => {
+    this.roomnumber=data.roomnumber
 
-      const isMe = msg.userName === this.name;
+    this.roomrequest(this.roomnumber,this.username).subscribe(response=>{
+      console.log("this is response",response)
+    })
+
+    this.chatService.connect(this.roomnumber, this.username).subscribe(msg => {
+
+      const isMe = msg.username === this.username;
 
       this.messages.push(new ChatModel(
-        msg.userName,
+        msg.username,
         msg.text,
         msg.systemFlag,
         {
@@ -157,9 +189,11 @@ export class ChatComponent implements OnInit {
       ));
     });
   }
+
+
   send(message: string): void {
     this.chatService.send(
-      this.name, message
+      this.username, message
     );
   }
   //constructor() {}
@@ -173,14 +207,14 @@ export class ChatComponent implements OnInit {
 }
 
 class ChatModel {
-  userName: string;
+  username: string;
   text: string;
   systemFlag: boolean;
   speaker: {};
   faceColor: string;
 
-  constructor(userName: string, text: string, systemFlag: boolean, speaker: {}, faceColor: string) {
-    this.userName = userName;
+  constructor(username: string, text: string, systemFlag: boolean, speaker: {}, faceColor: string) {
+    this.username = username;
     this.text = text;
     this.systemFlag = systemFlag;
     this.speaker = speaker;

@@ -5,11 +5,25 @@
 p
 </div>
 <div class="container">
+
+  <form [formGroup]="roomnumberform" (ngSubmit)="startchat(roomnumberform.value)">
+
+    <div>
+      <label for="roomnumber">
+        roomnumber
+      </label>
+      <input id="roomnumber" type="text" formControlName="roomnumber">
+    </div>
+
+    <button class="button" type="submit">スタート！</button>
+
+  </form>
+
   <div appNgAutoScroll class="chat-box">
     <ul class="list-group">
       <li *ngFor="let msg of messages" class="list-group-item" [ngClass]="msg.speaker">
         <div class="col-xs-2 face"><img
-          src="http://placehold.jp/24/{{msg.faceColor}}/FFF/100x50.png?text={{msg.userName}}"></div>
+          src="http://placehold.jp/24/{{msg.faceColor}}/FFF/100x50.png?text={{msg.username}}"></div>
         <div class="col-xs-1"></div>
         <div class="col-xs-9 fukidashi"><span>{{msg.text}}</span></div>
       </li>

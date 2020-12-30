@@ -2,18 +2,18 @@
 <form [formGroup]="loginform" (ngSubmit)="onSubmit(loginform.value)">
 
   <div>
-    <label for="name">
-      roomnumber
+    <label for="username">
+      ユーザーネーム
     </label>
-    <input id="name" type="text" formControlName="roomnumber">
+    <input id="username" type="text" formControlName="username">
   </div>
 
   <div>
-    <label for="address">
-      username
+    <label for="password">
+      パスワード
     </label>
-    <input id="address" type="text" formControlName="username">
+    <input id="password" type="password" formControlName="password">
   </div>
-  <button class="button" type="submit">Purchase</button>
+  <button class="button" type="submit">ログイン</button>
 
 </form>

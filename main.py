@@ -11,10 +11,11 @@ from flask_socketio import SocketIO,emit,send
 from threading import Thread
 import time
 import socket
+#import websocket
 from flask_cors import CORS
 import json
+from data import database
 async_mode = None
-
 
 # Flaskオブジェクトを生成し、セッション情報暗号化のキーを指
 
@@ -37,32 +38,37 @@ def getAngular():
 
 @app.route("/login",methods=["GET"])
 def get_info():
+    #print(request.environ)
     print("got account info")
     #print(request.environ)
 
     if request.environ.get("QUERY_STRING"):
         print(request.environ.get("QUERY_STRING"))
+        getquery = request.environ.get("QUERY_STRING")
+        print("ゲット",)
+        return app.send_static_file("index.html")
     pr = request.get_data()
     #print(pr)
     return app.send_static_file("index.html")
 
 @app.route("/login",methods=["POST"])
 def get_account():
-    print("asdfsdf")
-    print(type(request.get_data().decode()))
     logininfo = json.loads(request.get_data().decode())
-    print(type(logininfo))
-    return app.send_static_file("index.html")
+    username = logininfo["username"]
+    password = logininfo["password"]
+    check = database()
+    connectioncheck = check.connect(username="chat",password="mychatapp")
+    logincheck = check.user_check(username=username,password=password)
+    response = json.dumps({"message": logincheck})
+
+    return response
 
 @app.route('/chat', methods=['GET'])
 def getchat():
     print("this is a chat event")
     data = request.get_data()
     a = data.decode("utf-8")
-    #print(request.environ)
 
-    #print(request.environ.get("wsgi.websocket"))
-    #print(request.data.decode("utf-8"))
     if request.environ.get("wsgi.websocket"):
         print("chat accessed")
         host = "localhost"
@@ -78,6 +84,20 @@ def getchat():
         print(received_packet)
 
     return app.send_static_file('index.html')
+
+@app.route("/chat",methods=["POST"])
+def getid():
+    query = json.loads(request.get_data().decode())
+
+    #query = "couldn't get query"
+    #print(request.environ)
+    print(type(query))
+    print("get request")
+    username ,roomnumber = query["username"],query["roomnumber"]
+    if not query:
+        return "couldn't get query"
+    else:
+        print(query)
 
 """@app.route("/<string:name>",methods=['GET',"POST"])
 def namepage(name):
