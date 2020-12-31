@@ -84,19 +84,15 @@ export class ChatComponent implements OnInit {
     );
 }
 
- connect(){
-    this.websocket.subscribe(message =>{
-      console.log(message)
-      console.log("mesage",message)
-    })
- }
-
 
  sendmessage(data:any){
-   console.log("push message")
-   return this.websocket.next(data.chatmessage)
- }
+   console.log("push message",data.chatmessage)
 
+  if(this.ws.readyState === WebSocket.OPEN){
+    console.log("送った")
+    return this.ws.send(data.chatmessage)
+  }//https://bugsdb.com/_ja/debug/19204bfe6dfe10f00bd2c0ae346f666f
+ }
 
 
  roomrequest(roomnumber:string,username:string,type:string){
