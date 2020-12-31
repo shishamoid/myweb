@@ -6,16 +6,23 @@ from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 from flask_uwsgi_websocket import GeventWebSocket
 from flask_restful import Resource, Api, marshal_with
-from flask_socketio import SocketIO,emit,send
+#from flask_socketio import SocketIO,emit,send
 #import bbbserial as bbb
 from threading import Thread
 import time
 import socket
-#import websocket
+
 from flask_cors import CORS
 import json
 from data import database
+import subprocess
 async_mode = None
+
+#from wsrequests import WsRequests
+
+#wsr = WsRequests()
+
+# login django
 
 # Flaskオブジェクトを生成し、セッション情報暗号化のキーを指
 
@@ -59,6 +66,7 @@ def get_account():
     check = database()
     connectioncheck = check.connect(username="chat",password="mychatapp")
     logincheck = check.user_check(username=username,password=password)
+    close=check.close_connection()
     response = json.dumps({"message": logincheck})
 
     return response
@@ -88,16 +96,56 @@ def getchat():
 @app.route("/chat",methods=["POST"])
 def getid():
     query = json.loads(request.get_data().decode())
+    print(query)
+    type = query["type"]
+    check = database()
+    connectioncheck = check.connect(username="chat",password="mychatapp")
+    if type=="connect":
+        username,roomnumber = query["username"],query["roomnumber"]
+        loaded_message = check.load_chat(roomnumber=roomnumber)
 
-    #query = "couldn't get query"
-    #print(request.environ)
-    print(type(query))
-    print("get request")
-    username ,roomnumber = query["username"],query["roomnumber"]
-    if not query:
-        return "couldn't get query"
+
+        if loaded_message=="まだルームがありません":
+            return "roomを作成してください"
+        else:
+            """host = "localhost"
+            #port = 5001
+            print("room あり")
+            print(username,roomnumber)
+
+            #wsr.connect("ws://localhost:5001/chat?{}&{}".format(username,roomnumber))
+            #subprocess.Popen(["python websocket.py"])
+            host = "localhost"
+            port =123
+            port = int(roomnumber.ljust(5,"0"))
+            print("host",host)
+            print("port",port)
+            server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server.bind((host, port))
+
+            while True:
+                print("ppp")
+                server.listen(queue_size)
+                client, address = server.accept()
+                print(client,address)
+                received_packet = client.recv()
+                print(received_packet)"""
+            try:
+                subprocess.Popen("python websocket.py {}".format(roomnumber),shell=True)
+            except OSError:
+                pass
+            #print(loaded_message)
+            time.sleep(1)
+            return "socketサーバー起動"
+
+    elif type=="create":
+        roomnumber = query["roomnumber"]
+        print(roomnumber)
+
+        message = check.create_room(roomnumber=roomnumber)
+        return message
     else:
-        print(query)
+        return "invalid request"
 
 """@app.route("/<string:name>",methods=['GET',"POST"])
 def namepage(name):

@@ -6,7 +6,7 @@ p
 </div>
 <div class="container">
 
-  <form [formGroup]="roomnumberform" (ngSubmit)="startchat(roomnumberform.value)">
+  <form [formGroup]="roomnumberform" (ngSubmit)="connectchat(roomnumberform.value,'connect')">
 
     <div>
       <label for="roomnumber">
@@ -14,28 +14,20 @@ p
       </label>
       <input id="roomnumber" type="text" formControlName="roomnumber">
     </div>
-
     <button class="button" type="submit">スタート！</button>
-
   </form>
-
-  <div appNgAutoScroll class="chat-box">
-    <ul class="list-group">
-      <li *ngFor="let msg of messages" class="list-group-item" [ngClass]="msg.speaker">
-        <div class="col-xs-2 face"><img
-          src="http://placehold.jp/24/{{msg.faceColor}}/FFF/100x50.png?text={{msg.username}}"></div>
-        <div class="col-xs-1"></div>
-        <div class="col-xs-9 fukidashi"><span>{{msg.text}}</span></div>
-      </li>
-    </ul>
-  </div>
-  <div class="send-box">
-    <div class="row">
-      <div class="col-10"><input #sendMessage class="form-control" (keydown.meta.enter)="send(sendMessage.value); sendMessage.value='';"></div>
-      <div class="col-2">
-        <button class="btn btn-default" (click)="send(sendMessage.value); sendMessage.value='';">送信</button>
+  <form [formGroup] = "createnewroom" (ngSubmit) = "connectchat(createnewroom.value,'create')">
+    <div>
+      <input id="requestroom" type="text" formControlName="createnumber">
       </div>
-    </div>
+      <button class="button" type="submit">ルームを作成</button>
+    </form>
+
+<div>
+  <form [formGroup] = "chatform" (ngSubmit)= "sendmessage(chatform.value)">
+
+      <input formControlName="chatmessage">
+      <button type= "submit">送信</button>
+        </form>
   </div>
-</div>
 <!--<div>{{subject}}</div>-->
