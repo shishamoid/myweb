@@ -14,6 +14,8 @@ import { LoginComponent } from './login/login.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
+import {NgxAutoScrollModule} from "ngx-auto-scroll";
+
 const myRoutes = [
   //{path:"",component: AppComponent},
   { path: 'main', component: MainComponent },
@@ -27,6 +29,7 @@ const myRoutes = [
     MainComponent,
     ChatComponent,
     LoginComponent,
+    NgxAutoScrollModule,
   ],
   imports: [
     BrowserModule,

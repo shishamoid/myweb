@@ -31,9 +31,9 @@ export class ChatComponent implements OnInit {
   chatform :FormGroup;
   createnewroom :FormGroup;
   createnumber : string;
-  websocket = new Subject<MessageEvent>();
+  //websocket = new Subject<MessageEvent>();
   //message : string;
-  message2 = this.websocket.asObservable();
+  message :string;
   ws: WebSocket;
 
   constructor(
@@ -70,10 +70,12 @@ export class ChatComponent implements OnInit {
    };
  }
 
+
  createObservableSocket(url:string){
-    this.ws = new WebSocket(url);
     return new Observable(observer => {
+        this.ws.onopen = e =>console.log("繋がった")
         this.ws.onmessage = (e) => {
+          console.log("responseがありました")
             console.log(e.data);
             var object = JSON.parse(e.data);
             observer.next(object);
@@ -84,13 +86,18 @@ export class ChatComponent implements OnInit {
     );
 }
 
+connection(){
+  return new Observable(observer => {this.ws.onopen = a=>observer.next()})
+}
 
  sendmessage(data:any){
    console.log("push message",data.chatmessage)
-
+   console.log(this.ws.readyState)
   if(this.ws.readyState === WebSocket.OPEN){
     console.log("送った")
-    return this.ws.send(data.chatmessage)
+    //roomunum調整する必要あり
+    this.message = JSON.stringify({"user":this.username,"roomnumber":this.roomnumber,"message":data.chatmessage})
+    return this.ws.send(this.message)
   }//https://bugsdb.com/_ja/debug/19204bfe6dfe10f00bd2c0ae346f666f
  }
 
@@ -134,6 +141,9 @@ export class ChatComponent implements OnInit {
         }else{
           //alert(response)
           console.log("チャット開始")
+          this.ws = new WebSocket(`ws://localhost:${this.roomnumber}`);
+          console.log("socket instanse",this.ws)
+          this.connection().subscribe(k=>{console.log(k)})
           this.startchat()
           console.log("レスポンス")
         }
