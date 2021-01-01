@@ -19,7 +19,7 @@ import { FormGroup, FormControl } from '@angular/forms';
 })
 
 export class ChatComponent implements OnInit {
-  roomnumber: string;
+  roomname: string;
   username: string;
   subject: WebSocketSubject<MessageEvent>
 
@@ -27,7 +27,7 @@ export class ChatComponent implements OnInit {
   //@ViewChild("test") test: ElementRef
   //messages: ChatModel[] = new Array(); // -- ① htmlで利用するオブジェクトです\
   response : string;
-  roomnumberform : FormGroup;
+  roomnameform : FormGroup;
   chatform :FormGroup;
   createnewroom :FormGroup;
   createnumber : string;
@@ -35,13 +35,14 @@ export class ChatComponent implements OnInit {
   //message : string;
   message :string;
   ws: WebSocket;
+  chatarray = [];
 
   constructor(
     private http:HttpClient,
     private route: ActivatedRoute,
   ) {
-    this.roomnumberform = new FormGroup({
-    roomnumber: new FormControl(''),
+    this.roomnameform = new FormGroup({
+    roomname: new FormControl(''),
     });
     this.createnewroom = new FormGroup({
       createnumber: new FormControl(""),
@@ -56,7 +57,7 @@ export class ChatComponent implements OnInit {
     console.log("next")
 
     this.route.queryParamMap.subscribe((params: ParamMap) => {
-    //this.roomnumber = params.get('roomnumber')||"";
+    //this.roomname = params.get('roomname')||"";
     this.username = params.get("username") || "";
     });
     //this.message = subscribe(this.sendmessage)
@@ -71,7 +72,7 @@ export class ChatComponent implements OnInit {
  }
 
 
- createObservableSocket(url:string){
+ createObservableSocket(){
     return new Observable(observer => {
         this.ws.onopen = e =>console.log("繋がった")
         this.ws.onmessage = (e) => {
@@ -96,52 +97,50 @@ connection(){
   if(this.ws.readyState === WebSocket.OPEN){
     console.log("送った")
     //roomunum調整する必要あり
-    this.message = JSON.stringify({"user":this.username,"roomnumber":this.roomnumber,"message":data.chatmessage})
+    this.message = JSON.stringify({"user":this.username,"roomname":this.roomname,"message":data.chatmessage})
     return this.ws.send(this.message)
   }//https://bugsdb.com/_ja/debug/19204bfe6dfe10f00bd2c0ae346f666f
  }
 
 
- roomrequest(roomnumber:string,username:string,type:string){
+ roomrequest(roomname:string,username:string,type:string){
    //websocket接続要求
-   console.log(roomnumber,username,type)
-   var requestdata = JSON.stringify({"type": type,"username" : username,"roomnumber":roomnumber})
+   console.log(roomname,username,type)
+   var requestdata = JSON.stringify({"type": type,"username" : username,"roomname":roomname})
    console.log("this is request",requestdata)
    return this.http.post("/chat",requestdata,{responseType: 'text'}).pipe(catchError(this.handleError))
    }
 
   startchat(){
     console.log("response")
-    this.createObservableSocket(`ws://localhost:${this.roomnumber}`).subscribe(msg=>{console.log("message",msg)});
+    this.createObservableSocket().subscribe(msg=>{console.log("message",msg)});
   }
 
   connectchat(data :any,type :string){
     //type = create or connect
     console.log("type",type)
-    this.roomnumber=data.roomnumber
-    this.createnumber = data.createnumber
-
 
     if (type=="create"){
-      this.roomrequest(this.roomnumber||this.createnumber,this.username,type).subscribe(response=>{
+      this.createnumber = data.createnumber
+      this.roomrequest(data.createnumber,this.username,type).subscribe(response=>{
         console.log(response)
         if(response == "roomの作成に成功しました"){
           alert(response)
         }else{
           alert(response)
-
         }
       })
     }else if(type=="connect"){
-      this.roomrequest(this.roomnumber||this.createnumber,this.username,type).subscribe(response=>{
+      this.roomrequest(data.roomname,this.username,type).subscribe(response=>{
         console.log("response!",response)
-
         if(response == "roomを作成してください"){
           alert(response)
         }else{
-          //alert(response)
+          console.log("roomあった")
           console.log("チャット開始")
-          this.ws = new WebSocket(`ws://localhost:${this.roomnumber}`);
+          var port = JSON.parse(response).port
+          var message = JSON.parse(response).message
+          this.ws = new WebSocket(`ws://localhost:${port}`);
           console.log("socket instanse",this.ws)
           this.connection().subscribe(k=>{console.log(k)})
           this.startchat()
@@ -153,15 +152,27 @@ connection(){
     }
   }
 
+  lender_chat(){
+    this.chatarray.push
+  }
 
   //constructor() {}
   ngAfterViewInit() {
     //var text  = this.test.nativeElement.innerHTML
     const fun1 = (pokemon: string) =>{
     }
+    var date = new Date()
+    console.log("this is today")
+    console.log(date)
+    console.log(date.getTime)
     console.log("")
     //this.test.nativeElement.onclick = fun1(text)
   }
 }
 
+class chatmodel {
+  username :string;
+  message:string;
+  time: string;
+}
 import { webSocket} from 'rxjs/webSocket';

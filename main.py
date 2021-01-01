@@ -61,15 +61,26 @@ def get_info():
 @app.route("/login",methods=["POST"])
 def get_account():
     logininfo = json.loads(request.get_data().decode())
-    username = logininfo["username"]
-    password = logininfo["password"]
-    check = database()
-    connectioncheck = check.connect(username="chat",password="mychatapp")
-    logincheck = check.user_check(username=username,password=password)
-    close=check.close_connection()
-    response = json.dumps({"message": logincheck})
+    if logininfo["type"] == "connect":
+        username = logininfo["username"]
+        password = logininfo["password"]
+        check = database()
+        connectioncheck = check.connect(username="chat",password="mychatapp")
+        logincheck = check.user_check(username=username,password=password)
+        close=check.close_connection()
+        response = json.dumps({"message": logincheck})
 
-    return response
+        return response
+
+    if logininfo["type"] == "create":
+        newusername = logininfo["newusername"]
+        newpassword = logininfo["newpassword"]
+        check = database()
+        connectioncheck = check.connect(username="chat",password="mychatapp")
+        createcheck = check.create_user(username=newusername,password=newpassword)
+        close=check.close_connection()
+
+        return json.dumps({"message":createcheck})
 
 @app.route('/chat', methods=['GET'])
 def getchat():
@@ -101,48 +112,27 @@ def getid():
     check = database()
     connectioncheck = check.connect(username="chat",password="mychatapp")
     if type=="connect":
-        username,roomnumber = query["username"],query["roomnumber"]
-        loaded_message = check.load_chat(roomnumber=roomnumber)
-
+        username,roomname = query["username"],query["roomname"]
+        loaded_message,roomnumber = check.load_chat(roomname=roomname)
 
         if loaded_message=="まだルームがありません":
             return "roomを作成してください"
         else:
-            """host = "localhost"
-            #port = 5001
-            print("room あり")
-            print(username,roomnumber)
-
-            #wsr.connect("ws://localhost:5001/chat?{}&{}".format(username,roomnumber))
-            #subprocess.Popen(["python websocket.py"])
-            host = "localhost"
-            port =123
-            port = int(roomnumber.ljust(5,"0"))
-            print("host",host)
-            print("port",port)
-            server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            server.bind((host, port))
-
-            while True:
-                print("ppp")
-                server.listen(queue_size)
-                client, address = server.accept()
-                print(client,address)
-                received_packet = client.recv()
-                print(received_packet)"""
             try:
-                subprocess.Popen("python websocket.py {}".format(roomnumber),shell=True)
+                chat_port = int(roomnumber) +10000
+                subprocess.Popen("python websocket.py {}".format(chat_port),shell=True)
             except OSError:
                 pass
-            #print(loaded_message)
             time.sleep(1)
-            return "socketサーバー起動"
+            response = {}
+            response["message"] = dict(loaded_message)
+            response["port"] = chat_port
+            return json.dumps(response)
 
     elif type=="create":
-        roomnumber = query["roomnumber"]
-        print(roomnumber)
-
-        message = check.create_room(roomnumber=roomnumber)
+        roomname = query["roomname"]
+        print(roomname)
+        message = check.create_room(roomname=roomname)
         return message
     else:
         return "invalid request"

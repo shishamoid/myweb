@@ -6,13 +6,13 @@ p
 </div>
 <div class="container">
 
-  <form [formGroup]="roomnumberform" (ngSubmit)="connectchat(roomnumberform.value,'connect')">
+  <form [formGroup]="roomnameform" (ngSubmit)="connectchat(roomnameform.value,'connect')">
 
     <div>
-      <label for="roomnumber">
-        roomnumber
+      <label for="roomname">
+        roomname
       </label>
-      <input id="roomnumber" type="text" formControlName="roomnumber">
+      <input id="roomname" type="text" formControlName="roomname">
     </div>
     <button class="button" type="submit">スタート！</button>
   </form>
@@ -30,4 +30,10 @@ p
       <button type= "submit">送信</button>
         </form>
   </div>
+  <div>
+    <ul>
+      <li>
+      </li>
+      </ul>
+    </div>
 <!--<div>{{subject}}</div>-->

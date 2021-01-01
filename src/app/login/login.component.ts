@@ -17,16 +17,30 @@ import { Observable, of } from 'rxjs';
 })
 
 export class LoginComponent implements OnInit {
-  password : string;
-  username : string;
-  loginform : FormGroup;
-  router : Router;
-  query : string;
-  http : HttpClient;
-  response: string;
 
-  ngOnInit(): void {
-  }
+    password : string;
+    username : string;
+    loginform : FormGroup;
+    createform : FormGroup;
+    router : Router;
+    http : HttpClient;
+    response: string;
+
+     constructor(router :Router, http : HttpClient
+      ) {
+       this.router = router,
+       this.http = http,
+       this.loginform = new FormGroup({
+       username: new FormControl(''),
+       password: new FormControl(''),
+     });this.createform = new FormGroup({
+       newusername : new FormControl(""),
+       newpassword : new FormControl("")
+     })
+      }
+      ngOnInit(): void {
+      }
+
    handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
 
@@ -39,22 +53,23 @@ export class LoginComponent implements OnInit {
     };
   }
 
-   postdata(username :string,password:string){
-     //var requestdata = JSON.parse(`{"password": ${data.password}, "username": ${data.username}}`)
-     var requestdata = JSON.stringify({"username": username,"password" : password})
+   login_request(username :string,password:string){
+     var requestdata = JSON.stringify({"type": "connect","username": username,"password" : password})
      console.log("this is requestdata",requestdata)
-     //console.log(this.http.post("/login",requestdata).subscribe(responsedata => console.log(responsedata)))
      return this.http.post("/login",requestdata,{responseType: 'text'}).pipe(catchError(this.handleError))
-
-     //return this.http.post("/login",requestdata).subscribe(responsedata => (console.log(responsedata),JSON.stringify(responsedata)))
    }
 
-   checkstatus(message : string){
-     console.log(message)
-     if(message=="ログイン成功"){
-       console.log("success")
-       this.router.navigate(["/chat"],{queryParams:{username : `${this.username}`}})
-     }else if(message=="パスワードが違います"){
+   create_request(newusername : string,newpassword:string){
+     var requestdata = JSON.stringify({"type": "create","newusername": newusername,"newpassword": newpassword})
+     return this.http.post("/login",requestdata,{responseType: "text"}).pipe(catchError(this.handleError))
+   }
+
+   check_login(response_message : string,username:string){
+     console.log(response_message)
+     if(response_message=="ログイン成功"){
+       alert(`ようこそ${username}さん！`)
+       this.router.navigate(["/chat"],{queryParams:{username : `${username}`}})
+     }else if(response_message=="パスワードが違います"){
         alert("パスワードが違います")
         this.username = ""
         this.password = ""
@@ -65,38 +80,33 @@ export class LoginComponent implements OnInit {
      }
    }
 
-   accept(){
-     var response = ""
-
-     //this.postdata(this.username,this.password).subscribe(_ => {this.response = _,console.log(_),console.log(JSON.parse(this.response).message)})
-     this.postdata(this.username,this.password).subscribe(response => {this.checkstatus(JSON.parse(response).message)})
-     console.log(this.response)
-     console.log(response)
+   create_check(response_message:string){
+     if(response_message == "ユーザーが作成されました"){
+       alert("新規ユーザが作成されました。ログインしてください！")
+     }else if(response_message=="ユーザーがすでにいます"){
+       alert("ユーザーがすでにいます。別の名前でつくってください")
+     }else{
+       alert(response_message)
+     }
    }
 
-   onSubmit(data : logininfo){
-     //this.getdata(data)
-     this.username = data.username
-     this.password = data.password
-     this.accept()
-     console.log("onSubmit",this.response)
-     //var response = this.getdata(data)
-     //this.router.navigate(["/login"],{queryParams:{username : `${data.username}`,password: `${data.password}`}})
+   create_user(data:createuser){
+    this.create_request(data.newusername,data.newpassword).subscribe(response => this.create_check(JSON.parse(response).message))
    }
-   constructor(router :Router, http : HttpClient
-    ) {
-     this.router = router,
-     this.http = http,
-     this.loginform = new FormGroup({
-     username: new FormControl(''),
-     password: new FormControl(''),
-   });
 
-    }
+   check_user(data : logininfo){
+     this.login_request(data.username,data.password).subscribe(response => {this.check_login(JSON.parse(response).message,data.username)})
+   }
+}
 
+
+interface createuser{
+  newusername : string;
+  newpassword : string;
 }
 
 interface logininfo {
     password : string,
-    username : string
+    username : string,
+    type:string;
 }

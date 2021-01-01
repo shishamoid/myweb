@@ -1,5 +1,5 @@
 <p>login works!</p>
-<form [formGroup]="loginform" (ngSubmit)="onSubmit(loginform.value)">
+<form [formGroup]="loginform" (ngSubmit)="check_user(loginform.value)">
 
   <div>
     <label for="username">
@@ -15,5 +15,18 @@
     <input id="password" type="password" formControlName="password">
   </div>
   <button class="button" type="submit">ログイン</button>
-
 </form>
+
+  <form [formGroup]="createform" (ngSubmit)="create_user(createform.value)">
+    <div>
+  <label for="newuser">
+    <input formControlName="newusername">
+    </label>
+    </div>
+    <div>
+    <label for="newpassword">
+      <input type="password" formControlName="newpassword">
+      </label>
+      </div>
+    <button class="button" type="submit">ユーザー作成</button>
+    </form>
