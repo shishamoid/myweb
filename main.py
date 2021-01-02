@@ -114,7 +114,7 @@ def getid():
     if type=="connect":
         username,roomname = query["username"],query["roomname"]
         loaded_message,roomnumber = check.load_chat(roomname=roomname)
-
+        print("ppppppppp")
         if loaded_message=="まだルームがありません":
             return "roomを作成してください"
         else:
@@ -123,8 +123,17 @@ def getid():
                 subprocess.Popen("python websocket.py {}".format(chat_port),shell=True)
             except OSError:
                 pass
-            time.sleep(1)
+            #time.sleep(1)
             response = {}
+            print("---")
+            print(loaded_message)
+            print(type(loaded_message))
+            print(loaded_message[0])
+            print("0000")
+            print(type(loaded_message[0]))
+            print("11111")
+            print(type(loaded_message[0]))
+            #print(type(loaded_message[0][0][2]))
             response["message"] = dict(loaded_message)
             response["port"] = chat_port
             return json.dumps(response)

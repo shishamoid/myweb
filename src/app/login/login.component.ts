@@ -90,14 +90,45 @@ export class LoginComponent implements OnInit {
      }
    }
 
-   create_user(data:createuser){
-    this.create_request(data.newusername,data.newpassword).subscribe(response => this.create_check(JSON.parse(response).message))
+   formcheck(username:string,password:string){
+     if(username==""){
+       return "名前を入力してください"
+     }else if(username.length>=20){
+       return "名前が長すぎます"
+     }
+     else if(password.length>=20){
+       return "パスワードが長すぎます"
+     }
+     else if(password==""){
+       return "パスワードを入力してください"
+     }else{
+       return "OK"
+     }
    }
 
+   create_user(data:createuser){
+    var formstatus = this.formcheck(data.newusername,data.newpassword)
+
+    if(formstatus=="OK"){
+    this.create_request(data.newusername,data.newpassword).subscribe(response => this.create_check(JSON.parse(response).message))
+    }else{
+    alert(formstatus)
+    }
+  }
+
    check_user(data : logininfo){
-     this.login_request(data.username,data.password).subscribe(response => {this.check_login(JSON.parse(response).message,data.username)})
+        var formstatus = this.formcheck(data.username,data.password)
+        if(formstatus=="OK"){
+          this.login_request(data.username,data.password).subscribe(response => {this.check_login(JSON.parse(response).message,data.username)})
+        }else{
+          alert(formstatus)
+        }
+     }
    }
-}
+
+
+
+
 
 
 interface createuser{

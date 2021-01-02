@@ -6,7 +6,7 @@ import sys
 port = sys.argv[1]
 import json
 import data
-
+import ast
 
     # クライアントが接続してきた時のイベント
 def new_client(client, server):
@@ -21,14 +21,20 @@ def client_left(client, server):
 
 # クライアントからのメッセージを受信した時のイベント
 def message_received(client, server, message):
-    message_dict = json.load(message)
-    user,roomnumber,message = message_dict["user"],message_dict["roomnumber"],message_dict["message"]
+    message_dict = json.loads(message,encoding="utf-8")
+
+    print("---------------------------")
+    print(message_dict["user"].encode("iso_8859_1").decode("utf-8"),\
+    message_dict["roomname"].encode("iso_8859_1").decode("utf-8"),message_dict["message"].encode("iso_8859_1").decode("utf-8"),message_dict["time"])
+
+    user,roomname,message,time = message_dict["user"].encode("iso_8859_1").decode("utf-8"),\
+    message_dict["roomname"].encode("iso_8859_1").decode("utf-8"),message_dict["message"].encode("iso_8859_1").decode("utf-8"),message_dict["time"]
+    print("request info")
     instance = data.database()
     instance.connect("chat","mychatapp")
-    instance.create_chat(username=user,roomnumber=roomnumber,message=message)
-
-    server.send_message_to_all(json.dumps({"message":message}))
-
+    roomnumber = instance.check_room(roomname=roomname)
+    return_message = instance.create_chat(username=user,roomnumber=roomnumber,message=message,time_str=time)
+    server.send_message_to_all(json.dumps({"message":return_message},ensure_ascii=False))
 
 if __name__ == "__main__":
     server = WebsocketServer(port=int(port), host='localhost')

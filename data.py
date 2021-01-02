@@ -9,8 +9,9 @@ class database():
     def connect(self,username,password):
         flag = False
 
-        self.mysql_connection = MySQLdb.connect(user= username,password= password,host="localhost",db="user_room_list")
+        self.mysql_connection = MySQLdb.connect(user= username,password= password,host="localhost",db="user_room_list",charset="utf8")
         self.mysql_instance = self.mysql_connection.cursor()
+        self.mysql_connection.commit()
         flag = True
 
         return flag
@@ -60,8 +61,9 @@ class database():
         check_result = self.check_room(roomname=roomname)
         if check_result == "まだルームがありません":
             try:
+                print("roomname",roomname)
                 #roomをroomlistに登録
-                self.mysql_instance.execute("insert into user_room_list.room_list(roomname) values('{}')").format(roomname)
+                self.mysql_instance.execute("insert into user_room_list.room_list(roomname) values('{}')".format(str(roomname)))
                 result = self.mysql_instance.fetchall()
                 self.mysql_connection.commit()
 
@@ -70,15 +72,16 @@ class database():
                 result = self.mysql_instance.fetchall()
                 self.mysql_connection.commit()
 
-                #roomnumberでtableをつくる
-                self.mysql_instance.execute("create table if not exists chatmessages.roomnumber_{}(username varchar(30),message varchar(100),time timestamp \
-                default current_timestamp)".format(roomnumber))
+                #roomnumberでtableをつくる timeはクライアントからおくられてくるのを使う
+                self.mysql_instance.execute("create table if not exists chatmessages.roomnumber_{}(username varchar(30),message varchar(100),time datetime)".format(str(result[0][0])))
                 result = self.mysql_instance.fetchall()
                 self.mysql_connection.commit()
 
                 return "roomの作成に成功しました"
-            except:
+            except Exception as e:
+                print(e)
                 return "roomの作成に失敗しました"
+
         else:
             return "すでにルームがあります"
 
@@ -100,19 +103,24 @@ class database():
             self.mysql_instance.execute("select username,message,time from chatmessages.roomnumber_{}".format(check_result))
             result = self.mysql_instance.fetchall()
             self.mysql_connection.commit()
-            print(result)
+            #print(result)
             return result,check_result
 
 
-    def create_chat(self,roomnumber,username,message):
+    def create_chat(self,roomnumber,username,message,time_str):
         try:
-            self.mysql_instance.execute("insert into chatmessages.roomnumber_{}(username,message) values('{}','{}')".format(roomnumber,username,message))
+            self.mysql_instance.execute("select cast('{}' as datetime)".format(time_str))
+            time_tuple = self.mysql_instance.fetchall()
+            time = time_tuple[0][0]
+            print("castできた")
+            self.mysql_instance.execute("insert into chatmessages.roomnumber_{}(username,message,time) values('{}','{}','{}')".format(roomnumber,username,message,time))
             self.mysql_connection.commit()
             message = "メッセージを送りました"
-        except:
+        except Exception as e:
+            print("sql error",e)
             message = "メッセージを送れませんでした。"
             pass
-        return flag
+        return message
 
 if __name__=="__main__":
 
