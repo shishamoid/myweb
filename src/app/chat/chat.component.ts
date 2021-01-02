@@ -22,20 +22,16 @@ export class ChatComponent implements OnInit {
   roomname: string;
   username: string;
   subject: WebSocketSubject<MessageEvent>
-
-  //message: Subject<unknown>
   //@ViewChild("test") test: ElementRef
-  //messages: ChatModel[] = new Array(); // -- ① htmlで利用するオブジェクトです\
   response: string;
   roomnameform: FormGroup;
   chatform: FormGroup;
   createnewroom: FormGroup;
   createnumber: string;
-  //websocket = new Subject<MessageEvent>();
-  //message : string;
   message: string;
   ws: WebSocket;
   chatarray = [];
+  connectstatus : boolean;
 
   constructor(
     private http: HttpClient,
@@ -52,17 +48,12 @@ export class ChatComponent implements OnInit {
     })
   }
 
-
   ngOnInit() {
-    console.log("next")
-
     this.route.queryParamMap.subscribe((params: ParamMap) => {
-      //this.roomname = params.get('roomname')||"";
       this.username = params.get("username") || "";
     });
-    //this.message = subscribe(this.sendmessage)
-
   }
+
   handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
       console.error(error);
@@ -70,7 +61,6 @@ export class ChatComponent implements OnInit {
       return of(result as T);
     };
   }
-
 
   createObservableSocket() {
     return new Observable(observer => {
@@ -90,14 +80,9 @@ export class ChatComponent implements OnInit {
 
 
   sendmessage(data: any) {
-    console.log("push message", data.chatmessage)
-    console.log(this.ws.readyState)
     if (this.ws.readyState === WebSocket.OPEN) {
-      console.log("送った")
       //roomunum調整する必要あり
       var date = new Date()
-      console.log("this is today")
-      console.log(date)
       var time = date.getFullYear()
         + '/' + ('0' + (date.getMonth() + 1)).slice(-2)
         + '/' + ('0' + date.getDate()).slice(-2)
@@ -107,84 +92,65 @@ export class ChatComponent implements OnInit {
       console.log(date.getTime())
 
       var moji = `{"user": "${this.username}","roomname": "${this.roomname}","message": "${data.chatmessage}","time": "${time}"}`
-      console.log(moji)
       this.message = JSON.stringify(JSON.parse(moji))
-      console.log("this is message",this.message)
       return this.ws.send(this.message)
     }//https://bugsdb.com/_ja/debug/19204bfe6dfe10f00bd2c0ae346f666f
   }
 
 
-  roomrequest(roomname: string, username: string, type: string) {
+  roomrequest(roomname: string, username: string, request_type: string) {
     //websocket接続要求
-    console.log(roomname, username, type)
-    var requestdata = JSON.stringify({ "type": type, "username": username, "roomname": roomname })
+    console.log(roomname, username, request_type)
+    var requestdata = JSON.stringify({ "request_type": request_type, "username": username, "roomname": roomname })
     console.log("this is request", requestdata)
     return this.http.post("/chat", requestdata, { responseType: 'text' }).pipe(catchError(this.handleError))
   }
 
   startchat() {
-    console.log("response")
     this.createObservableSocket().subscribe(msg => { console.log("message", msg) });
   }
 
-  connectchat(data: any, type: string) {
-    //type = create or connect
-    console.log("type", type)
-
-
-    if (type == "create") {
-      this.createnumber = data.createnumber
-      this.roomrequest(data.createnumber, this.username, type).subscribe(response => {
-        console.log(response)
-        if (response == "roomの作成に成功しました") {
-          alert(response)
-        } else {
-          alert(response)
+  connectchat(data: any, request_type: string) {
+    //request_type = create or connect
+    switch(request_type){
+      case "create":
+        this.createnumber = data.createnumber
+        this.roomrequest(data.createnumber, this.username, request_type).subscribe(response => {
+          alert(response) //roomの作成に成功しました or roomの作成に失敗しました
+        })
+        break
+      case "connect":
+        if(this.roomname==data.roomname){
+          alert("接続中です")
+        }else{
+          this.roomrequest(data.roomname, this.username, request_type).subscribe(response => {
+          if (response == "roomを作成してください"){
+            alert(response)
+          }else{
+            var port = JSON.parse(response).port
+            var message :[] = JSON.parse(response).message
+            this.roomname = data.roomname
+            this.ws = new WebSocket(`ws://localhost:${port}`);
+            this.startchat()
+            }
+          })
         }
-      })
-    } else if (type == "connect") {
-      this.roomrequest(data.roomname, this.username, type).subscribe(response => {
-        console.log("response!", response)
-        if (response == "roomを作成してください") {
-          alert(response)
-        } else {
-          console.log("roomあった")
-          console.log("チャット開始")
-          var port = JSON.parse(response).port
-          var message = JSON.parse(response).message
-          console.log("port ", port)
-          console.log("message", message)
-          this.roomname = data.roomname
-          this.ws = new WebSocket(`ws://localhost:${port}`);
-          console.log("socket instanse", this.ws)
-          //this.connection().subscribe(k=>{console.log(k)})
-          this.startchat()
-          console.log("レスポンス")
-        }
-      })
-    } else {
-      alert("invalid request")
+      }
     }
-  }
 
-  lender_chat() {
+  lender_chat(messages:[]) {
+    for(var message in messages){
+      message[2]
+    }
     this.chatarray.push
   }
 
   //constructor() {}
   ngAfterViewInit() {
     //var text  = this.test.nativeElement.innerHTML
-    const fun1 = (pokemon: string) => {
+    const fun1 = (pokemon: string) => {console.log("ポケモン")
     }
     console.log("")
     //this.test.nativeElement.onclick = fun1(text)
   }
 }
-
-class chatmodel {
-  username: string;
-  message: string;
-  time: string;
-}
-import { webSocket } from 'rxjs/webSocket';

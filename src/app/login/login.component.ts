@@ -54,7 +54,7 @@ export class LoginComponent implements OnInit {
   }
 
    login_request(username :string,password:string){
-     var requestdata = JSON.stringify({"type": "connect","username": username,"password" : password})
+     var requestdata = JSON.stringify({"request_type": "connect","username": username,"password" : password})
      console.log("this is requestdata",requestdata)
      return this.http.post("/login",requestdata,{responseType: 'text'}).pipe(catchError(this.handleError))
    }

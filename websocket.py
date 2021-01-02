@@ -23,9 +23,6 @@ def client_left(client, server):
 def message_received(client, server, message):
     message_dict = json.loads(message,encoding="utf-8")
 
-    print("---------------------------")
-    print(message_dict["user"].encode("iso_8859_1").decode("utf-8"),\
-    message_dict["roomname"].encode("iso_8859_1").decode("utf-8"),message_dict["message"].encode("iso_8859_1").decode("utf-8"),message_dict["time"])
 
     user,roomname,message,time = message_dict["user"].encode("iso_8859_1").decode("utf-8"),\
     message_dict["roomname"].encode("iso_8859_1").decode("utf-8"),message_dict["message"].encode("iso_8859_1").decode("utf-8"),message_dict["time"]
@@ -37,10 +34,13 @@ def message_received(client, server, message):
     server.send_message_to_all(json.dumps({"message":return_message},ensure_ascii=False))
 
 if __name__ == "__main__":
-    server = WebsocketServer(port=int(port), host='localhost')
-    # イベントで使うメソッドの設定
-    server.set_fn_new_client(new_client)
-    server.set_fn_client_left(client_left)
-    server.set_fn_message_received(message_received)
-    # 実行
-    server.run_forever()
+    try:
+        server = WebsocketServer(port=int(port), host='localhost')
+        # イベントで使うメソッドの設定
+        server.set_fn_new_client(new_client)
+        server.set_fn_client_left(client_left)
+        server.set_fn_message_received(message_received)
+        # 実行
+        server.run_forever()
+    except OSError:
+        pass

@@ -1,4 +1,4 @@
- # -*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 import sys
 from flask import Flask,request,jsonify
 
@@ -17,7 +17,7 @@ import json
 from data import database
 import subprocess
 async_mode = None
-
+from datetime import datetime
 #from wsrequests import WsRequests
 
 #wsr = WsRequests()
@@ -37,6 +37,11 @@ app.config['JSON_AS_ASCII'] = False
 app.config['SECRET_KEY'] = 'secret!'
 CORS(app)
 
+def json_serial(obj):
+    if isinstance(obj, (datetime, datetime)):
+        return datetime.strftime(obj,'%Y-%m-%d %H:%M:%S')
+    raise TypeError ("Type %s not serializable" % type(obj))
+
 @app.route('/', methods=['GET'])
 def getAngular():
     #print(request.environ)
@@ -45,23 +50,15 @@ def getAngular():
 
 @app.route("/login",methods=["GET"])
 def get_info():
-    #print(request.environ)
-    print("got account info")
-    #print(request.environ)
 
-    if request.environ.get("QUERY_STRING"):
-        print(request.environ.get("QUERY_STRING"))
-        getquery = request.environ.get("QUERY_STRING")
-        print("ゲット",)
-        return app.send_static_file("index.html")
     pr = request.get_data()
-    #print(pr)
+
     return app.send_static_file("index.html")
 
 @app.route("/login",methods=["POST"])
 def get_account():
     logininfo = json.loads(request.get_data().decode())
-    if logininfo["type"] == "connect":
+    if logininfo["request_type"] == "connect":
         username = logininfo["username"]
         password = logininfo["password"]
         check = database()
@@ -72,7 +69,7 @@ def get_account():
 
         return response
 
-    if logininfo["type"] == "create":
+    if logininfo["request_type"] == "create":
         newusername = logininfo["newusername"]
         newpassword = logininfo["newpassword"]
         check = database()
@@ -107,15 +104,13 @@ def getchat():
 @app.route("/chat",methods=["POST"])
 def getid():
     query = json.loads(request.get_data().decode())
-    print(query)
-    type = query["type"]
+    request_type = query["request_type"]
     check = database()
     connectioncheck = check.connect(username="chat",password="mychatapp")
-    if type=="connect":
+    if request_type=="connect":
         username,roomname = query["username"],query["roomname"]
-        loaded_message,roomnumber = check.load_chat(roomname=roomname)
-        print("ppppppppp")
-        if loaded_message=="まだルームがありません":
+        chat_messages,roomnumber = check.load_chat(roomname=roomname)
+        if chat_messages=="まだルームがありません":
             return "roomを作成してください"
         else:
             try:
@@ -125,18 +120,16 @@ def getid():
                 pass
             #time.sleep(1)
             response = {}
-            print("---")
-            print(loaded_message)
-            print(type(loaded_message))
-            print(loaded_message[0])
-            print("0000")
-            print(type(loaded_message[0]))
-            print("11111")
-            print(type(loaded_message[0]))
-            #print(type(loaded_message[0][0][2]))
-            response["message"] = dict(loaded_message)
+            #test = (('test', 'こんにちは', datetime.datetime(2021, 1, 2, 19, 29, 43)),)
+
+            """for i in range(len(chat_messages)):
+                for j in range(len(chat_messages[i])):
+                    if isinstance(chat_messages[i][j],datetime)"""
+
+            response["message"] = chat_messages
             response["port"] = chat_port
-            return json.dumps(response)
+            #print(json.dumps(response,default=json_serial))
+            return json.dumps(response,default=json_serial)
 
     elif type=="create":
         roomname = query["roomname"]

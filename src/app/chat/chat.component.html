@@ -31,16 +31,17 @@ p
     </form>
 
 <div>
-  <form [formGroup] = "chatform" (ngSubmit)= "sendmessage(chatform.value)">
-      <input formControlName="chatmessage">
-      <button type= "submit">送信</button>
-        </form>
+
   </div>
   <div>
     <ul>
-      <li>
-
+      <li *ngFor="let message of chatarray">
+        {{message[0]}} {{message[1]}} {{message[2]}}
       </li>
       </ul>
+      <form [formGroup] = "chatform" (ngSubmit)= "sendmessage(chatform.value)">
+          <input formControlName="chatmessage">
+          <button type= "submit">送信</button>
+          </form>
     </div>
 <!--<div>{{subject}}</div>-->
