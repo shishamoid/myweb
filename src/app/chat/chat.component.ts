@@ -30,7 +30,7 @@ export class ChatComponent implements OnInit {
   createnumber: string;
   message: string;
   ws: WebSocket;
-  chatarray = [];
+  chatarray :string[][]
   connectstatus : boolean;
 
   constructor(
@@ -80,16 +80,24 @@ export class ChatComponent implements OnInit {
 
 
   sendmessage(data: any) {
+    var date = new Date()
+    var time = date.getFullYear()
+      + '/' + ('0' + (date.getMonth() + 1)).slice(-2)
+      + '/' + ('0' + date.getDate()).slice(-2)
+      + ' ' + ('0' + date.getHours()).slice(-2)
+      + ':' + ('0' + date.getMinutes()).slice(-2)
+      + ':' + ('0' + date.getSeconds()).slice(-2)
+    console.log(date.getTime())
+
+    var last_index:number= this.chatarray.length
+    this.chatarray[last_index]= []
+    this.chatarray[last_index][0] = "mymessage"
+    this.chatarray[last_index][1] = data.chatmessage
+    this.chatarray[last_index][2] = date.getHours().toString() + ":" + date.getMinutes().toString()
+    console.log(this.chatarray)
+
     if (this.ws.readyState === WebSocket.OPEN) {
       //roomunum調整する必要あり
-      var date = new Date()
-      var time = date.getFullYear()
-        + '/' + ('0' + (date.getMonth() + 1)).slice(-2)
-        + '/' + ('0' + date.getDate()).slice(-2)
-        + ' ' + ('0' + date.getHours()).slice(-2)
-        + ':' + ('0' + date.getMinutes()).slice(-2)
-        + ':' + ('0' + date.getSeconds()).slice(-2)
-      console.log(date.getTime())
 
       var moji = `{"user": "${this.username}","roomname": "${this.roomname}","message": "${data.chatmessage}","time": "${time}"}`
       this.message = JSON.stringify(JSON.parse(moji))
@@ -106,7 +114,8 @@ export class ChatComponent implements OnInit {
     return this.http.post("/chat", requestdata, { responseType: 'text' }).pipe(catchError(this.handleError))
   }
 
-  startchat() {
+  startchat(port:string) {
+    this.ws = new WebSocket(`ws://localhost:${port}`);
     this.createObservableSocket().subscribe(msg => { console.log("message", msg) });
   }
 
@@ -129,28 +138,41 @@ export class ChatComponent implements OnInit {
           }else{
             var port = JSON.parse(response).port
             var message :[] = JSON.parse(response).message
+            console.log(message)
+            //console.log(this.lender_chat(message))
+            this.chatarray = this.lender_chat(message)
             this.roomname = data.roomname
-            this.ws = new WebSocket(`ws://localhost:${port}`);
-            this.startchat()
+            this.startchat(port)
             }
           })
         }
       }
     }
+    parse_date(date:Date){
+      console.log()
+
+    }
 
   lender_chat(messages:[]) {
-    for(var message in messages){
-      message[2]
-    }
-    this.chatarray.push
-  }
+    //console.log("messages",messages)
+    var result_array :string[][] = []
 
-  //constructor() {}
+    for(var i in messages){
+      var message_content:string = messages[i][1]
+      var date = new Date(messages[i][2])
+      var message_date = date.getDate().toString() + "日"
+      var message_month = (date.getMonth()+1).toString() + "月"
+      var message_time = date.getHours().toString() + ":" + date.getMinutes().toString()
+      result_array[i] = []
+      var flag= (this.username == messages[i][0])?"mymessage":"othermessage"
+
+      result_array[i][0] = flag
+      result_array[i][1] = message_content
+      result_array[i][2] = message_time
+        }
+        return result_array
+      }
   ngAfterViewInit() {
-    //var text  = this.test.nativeElement.innerHTML
-    const fun1 = (pokemon: string) => {console.log("ポケモン")
-    }
-    console.log("")
-    //this.test.nativeElement.onclick = fun1(text)
+
   }
 }

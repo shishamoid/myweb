@@ -18,6 +18,7 @@ from data import database
 import subprocess
 async_mode = None
 from datetime import datetime
+import websockets
 #from wsrequests import WsRequests
 
 #wsr = WsRequests()
@@ -58,11 +59,13 @@ def get_info():
 @app.route("/login",methods=["POST"])
 def get_account():
     logininfo = json.loads(request.get_data().decode())
+    username = logininfo["username"]
+    password = logininfo["password"]
+    check = database()
+    connectioncheck = check.connect(username="chat",password="mychatapp")
+
     if logininfo["request_type"] == "connect":
-        username = logininfo["username"]
-        password = logininfo["password"]
-        check = database()
-        connectioncheck = check.connect(username="chat",password="mychatapp")
+
         logincheck = check.user_check(username=username,password=password)
         close=check.close_connection()
         response = json.dumps({"message": logincheck})
@@ -70,18 +73,14 @@ def get_account():
         return response
 
     if logininfo["request_type"] == "create":
-        newusername = logininfo["newusername"]
-        newpassword = logininfo["newpassword"]
-        check = database()
-        connectioncheck = check.connect(username="chat",password="mychatapp")
-        createcheck = check.create_user(username=newusername,password=newpassword)
+
+        createcheck = check.create_user(username=username,password=password)
         close=check.close_connection()
 
         return json.dumps({"message":createcheck})
 
 @app.route('/chat', methods=['GET'])
 def getchat():
-    print("this is a chat event")
     data = request.get_data()
     a = data.decode("utf-8")
 
@@ -105,6 +104,7 @@ def getchat():
 def getid():
     query = json.loads(request.get_data().decode())
     request_type = query["request_type"]
+    print(request_type)
     check = database()
     connectioncheck = check.connect(username="chat",password="mychatapp")
     if request_type=="connect":
@@ -115,23 +115,29 @@ def getid():
         else:
             try:
                 chat_port = int(roomnumber) +10000
-                subprocess.Popen("python websocket.py {}".format(chat_port),shell=True)
-            except OSError:
+                p = subprocess.Popen("python websocket.py {}".format(chat_port),shell=True,stdout=subprocess.PIPE)
+                    #print("test",subprocess_output.communicate())
+                flag = False
+                while flag ==False:
+                    print(p.stdout.readlines())
+                    if p.stdout.readlines()==[]:
+                        flag= True
+            except OSError as e:
+                print(e)
                 pass
             #time.sleep(1)
             response = {}
             #test = (('test', 'こんにちは', datetime.datetime(2021, 1, 2, 19, 29, 43)),)
-
             """for i in range(len(chat_messages)):
                 for j in range(len(chat_messages[i])):
                     if isinstance(chat_messages[i][j],datetime)"""
 
             response["message"] = chat_messages
             response["port"] = chat_port
-            #print(json.dumps(response,default=json_serial))
+            print(json.dumps(response,default=json_serial))
             return json.dumps(response,default=json_serial)
 
-    elif type=="create":
+    elif request_type=="create":
         roomname = query["roomname"]
         print(roomname)
         message = check.create_room(roomname=roomname)

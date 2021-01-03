@@ -53,16 +53,11 @@ export class LoginComponent implements OnInit {
     };
   }
 
-   login_request(username :string,password:string){
-     var requestdata = JSON.stringify({"request_type": "connect","username": username,"password" : password})
-     console.log("this is requestdata",requestdata)
-     return this.http.post("/login",requestdata,{responseType: 'text'}).pipe(catchError(this.handleError))
+   http_request(newusername : string,newpassword:string,type:string){
+     var requestdata = JSON.stringify({"request_type": type,"username": newusername,"password": newpassword})
+    return this.http.post("/login",requestdata,{responseType: "text"}).pipe(catchError(this.handleError))
    }
 
-   create_request(newusername : string,newpassword:string){
-     var requestdata = JSON.stringify({"type": "create","newusername": newusername,"newpassword": newpassword})
-     return this.http.post("/login",requestdata,{responseType: "text"}).pipe(catchError(this.handleError))
-   }
 
    check_login(response_message : string,username:string){
      console.log(response_message)
@@ -74,7 +69,7 @@ export class LoginComponent implements OnInit {
         this.username = ""
         this.password = ""
      }else{
-       alert("ユーザーがいません")
+       alert("入力された名前のユーザーがいません ログインしなおすが、新規に作成してください")
        this.username = ""
        this.password = ""
      }
@@ -84,7 +79,7 @@ export class LoginComponent implements OnInit {
      if(response_message == "ユーザーが作成されました"){
        alert("新規ユーザが作成されました。ログインしてください！")
      }else if(response_message=="ユーザーがすでにいます"){
-       alert("ユーザーがすでにいます。別の名前でつくってください")
+       alert("ユーザーがすでにいます。\n別の名前でつくってください")
      }else{
        alert(response_message)
      }
@@ -108,9 +103,8 @@ export class LoginComponent implements OnInit {
 
    create_user(data:createuser){
     var formstatus = this.formcheck(data.newusername,data.newpassword)
-
     if(formstatus=="OK"){
-    this.create_request(data.newusername,data.newpassword).subscribe(response => this.create_check(JSON.parse(response).message))
+    this.http_request(data.newusername,data.newpassword,"create").subscribe(response => this.create_check(JSON.parse(response).message))
     }else{
     alert(formstatus)
     }
@@ -119,17 +113,12 @@ export class LoginComponent implements OnInit {
    check_user(data : logininfo){
         var formstatus = this.formcheck(data.username,data.password)
         if(formstatus=="OK"){
-          this.login_request(data.username,data.password).subscribe(response => {this.check_login(JSON.parse(response).message,data.username)})
+          this.http_request(data.username,data.password,"connect").subscribe(response => {this.check_login(JSON.parse(response).message,data.username)})
         }else{
           alert(formstatus)
         }
      }
    }
-
-
-
-
-
 
 interface createuser{
   newusername : string;

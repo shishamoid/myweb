@@ -7,13 +7,14 @@ port = sys.argv[1]
 import json
 import data
 import ast
+import websocket
 
     # クライアントが接続してきた時のイベント
 def new_client(client, server):
     print('New client {}:{} has joined.'.format(client['address'][0], client['address'][1]))
-    time.sleep(2)
     # クライアントへメッセージ送信
     server.send_message(client,json.dumps({"info":"接続できた"}))
+
 
 # クライアントが切断した時のイベント
 def client_left(client, server):
@@ -22,7 +23,6 @@ def client_left(client, server):
 # クライアントからのメッセージを受信した時のイベント
 def message_received(client, server, message):
     message_dict = json.loads(message,encoding="utf-8")
-
 
     user,roomname,message,time = message_dict["user"].encode("iso_8859_1").decode("utf-8"),\
     message_dict["roomname"].encode("iso_8859_1").decode("utf-8"),message_dict["message"].encode("iso_8859_1").decode("utf-8"),message_dict["time"]
@@ -42,5 +42,6 @@ if __name__ == "__main__":
         server.set_fn_message_received(message_received)
         # 実行
         server.run_forever()
+
     except OSError:
         pass
