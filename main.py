@@ -55,7 +55,7 @@ def get_info():
 
     pr = request.get_data()
 
-    return app.render_templete("index.html")
+    return app.send_static_file("index.html")
 
 @app.route("/login",methods=["POST"])
 def get_account():
@@ -74,7 +74,6 @@ def get_account():
         logincheck = check.user_check(username=username,password=password)
         close=check.close_connection()
         response = json.dumps({"message": logincheck})
-
         return response
 
     if logininfo["request_type"] == "create":

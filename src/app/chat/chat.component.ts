@@ -10,6 +10,7 @@ import { LoginComponent } from '../login/login.component'
 import { of } from 'rxjs';
 import { catchError, map, tap, retry } from 'rxjs/operators';
 import { FormGroup, FormControl } from '@angular/forms';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -33,10 +34,13 @@ export class ChatComponent implements OnInit {
   chatarray :string[][] =[]
   connectstatus : boolean;
 
+
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
+    private router:Router
   ) {
+    this.router = router,
     this.roomnameform = new FormGroup({
       roomname: new FormControl(''),
     });
@@ -51,7 +55,22 @@ export class ChatComponent implements OnInit {
   ngOnInit() {
     this.route.queryParamMap.subscribe((params: ParamMap) => {
       this.username = params.get("username") || "";
-    });
+      this.roomname = params.get("roomname") || "";
+      console.log(this.roomname)
+      
+      if(this.roomname!=""){
+          console.log(this.roomname)
+          this.roomrequest(this.roomname,this.username,"connect").subscribe(response => {
+            var port = JSON.parse(response).port
+            var message :[] = JSON.parse(response).message
+            console.log(message)
+            //console.log(this.lender_chat(message))
+            this.chatarray = this.lender_chat(message)
+            this.startchat(port)
+            });
+          }
+
+    })
   }
 
   handleError<T>(operation = 'operation', result?: T) {
@@ -137,6 +156,7 @@ export class ChatComponent implements OnInit {
           if (response == "roomを作成してください"){
             alert(response)
           }else{
+            this.router.navigate(["/chat"],{queryParams:{username : `${this.username}`,roomname:`${data.roomname}`}})
             var port = JSON.parse(response).port
             var message :[] = JSON.parse(response).message
             console.log(message)
