@@ -20,37 +20,40 @@ class database():
             return flag
 
     def user_check(self,username,password):
-        message = ""
-        self.mysql_instance.execute("select password from user_list where username='{}'".format(username))
-        result = self.mysql_instance.fetchall()
-        self.mysql_connection.commit()
+        try:
+            message = ""
+            self.mysql_instance.execute("select password from user_list where username='{}'".format(username))
+            result = self.mysql_instance.fetchall()
+            self.mysql_connection.commit()
 
-        if len(result)==1:
-            got_pass = result[0][0]
-            if got_pass == password:
-                self.username = username
-                return "ログイン成功"
+            if len(result)==1:
+                got_pass = result[0][0]
+                if got_pass == password:
+                    self.username = username
+                    return "ログイン成功"
+                else:
+                    return "ログイン失敗"
             else:
-                return "パスワードが違います"
+                return "ログイン失敗"
 
-        elif len(result)==0:
-            return "ユーザーがいません"
-        else:
-            return "sqlエラー =>" + str(result)
+
+        except Exception as e:
+            return "sqlエラー =>" + str(e)
 
     def create_user(self,username,password):
         check = self.user_check(username,password)
-        if (check == "ログイン成功") or (check == "パスワードが違います"):
+        if check == "ログイン成功":
             return "ユーザーがすでにいます"
         else:
             try:
-                self.mysql_instance.execute("insert into user_room_list.user_list(username,roomname) values('{}','{}')".format(username,password))
+                self.mysql_instance.execute("insert into user_room_list.user_list(username,password) values('{}','{}')".format(username,password))
                 result = self.mysql_instance.fetchall()
                 self.mysql_connection.commit()
                 print("ユーザーが作成されました")
 
                 return result
-            except:
+            except Exception as e:
+                print("sql error",e)
                 return "ユーザーの作成に失敗しました"
 
 

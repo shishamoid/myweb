@@ -1,0 +1,7 @@
+.mymessage{
+    text-align: left;
+}
+.chatmessages_flame {
+  max-height: 200;
+  overflow: scroll;
+}

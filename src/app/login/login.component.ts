@@ -10,6 +10,9 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {Subject,Observer} from 'rxjs/Rx';
 import { catchError, map, tap,retry } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatIconModule } from '@angular/material/icon';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -25,6 +28,10 @@ export class LoginComponent implements OnInit {
     router : Router;
     http : HttpClient;
     response: string;
+    logincheck: string;
+    createuser:any;
+    requesttype:string;
+
 
      constructor(router :Router, http : HttpClient
       ) {
@@ -33,10 +40,7 @@ export class LoginComponent implements OnInit {
        this.loginform = new FormGroup({
        username: new FormControl(''),
        password: new FormControl(''),
-     });this.createform = new FormGroup({
-       newusername : new FormControl(""),
-       newpassword : new FormControl("")
-     })
+     });
       }
       ngOnInit(): void {
       }
@@ -64,20 +68,16 @@ export class LoginComponent implements OnInit {
      if(response_message=="ログイン成功"){
        alert(`ようこそ${username}さん！`)
        this.router.navigate(["/chat"],{queryParams:{username : `${username}`}})
-     }else if(response_message=="パスワードが違います"){
-        alert("パスワードが違います")
-        this.username = ""
-        this.password = ""
+     }else if(response_message=="ログイン失敗"){
+        alert("名前、パスワードが違います")
      }else{
-       alert("入力された名前のユーザーがいません ログインしなおすが、新規に作成してください")
-       this.username = ""
-       this.password = ""
+       alert(response_message)
      }
    }
 
    create_check(response_message:string){
      if(response_message == "ユーザーが作成されました"){
-       alert("新規ユーザが作成されました。ログインしてください！")
+       alert("新規ユーザが作成されました。\nログインしてください！")
      }else if(response_message=="ユーザーがすでにいます"){
        alert("ユーザーがすでにいます。\n別の名前でつくってください")
      }else{
@@ -101,29 +101,17 @@ export class LoginComponent implements OnInit {
      }
    }
 
-   create_user(data:createuser){
-    var formstatus = this.formcheck(data.newusername,data.newpassword)
-    if(formstatus=="OK"){
-    this.http_request(data.newusername,data.newpassword,"create").subscribe(response => this.create_check(JSON.parse(response).message))
-    }else{
-    alert(formstatus)
+   create_or_login(data:logininfo){
+      var formstatus = this.formcheck(data.username,data.password)
+      if(formstatus=="OK"){
+        console.log(this.requesttype)
+        this.http_request(data.username,data.password,this.requesttype).subscribe(response => {this.check_login(JSON.parse(response).message,data.username)})
+
+      }else{
+        alert(formstatus)
     }
   }
-
-   check_user(data : logininfo){
-        var formstatus = this.formcheck(data.username,data.password)
-        if(formstatus=="OK"){
-          this.http_request(data.username,data.password,"connect").subscribe(response => {this.check_login(JSON.parse(response).message,data.username)})
-        }else{
-          alert(formstatus)
-        }
-     }
    }
-
-interface createuser{
-  newusername : string;
-  newpassword : string;
-}
 
 interface logininfo {
     password : string,

@@ -11,16 +11,17 @@ from flask_restful import Resource, Api, marshal_with
 from threading import Thread
 import time
 import socket
-
 from flask_cors import CORS
 import json
 from data import database
 import subprocess
+from subprocess import PIPE
 async_mode = None
 from datetime import datetime
 import websockets
+import hashlib
 #from wsrequests import WsRequests
-
+from websocket import create_connection
 #wsr = WsRequests()
 
 # login django
@@ -54,13 +55,17 @@ def get_info():
 
     pr = request.get_data()
 
-    return app.send_static_file("index.html")
+    return app.render_templete("index.html")
 
 @app.route("/login",methods=["POST"])
 def get_account():
     logininfo = json.loads(request.get_data().decode())
+    print(logininfo)
     username = logininfo["username"]
     password = logininfo["password"]
+    password= password.encode()
+    password = hashlib.sha256(password).hexdigest()
+
     check = database()
     connectioncheck = check.connect(username="chat",password="mychatapp")
 
@@ -104,28 +109,33 @@ def getchat():
 def getid():
     query = json.loads(request.get_data().decode())
     request_type = query["request_type"]
-    print(request_type)
     check = database()
     connectioncheck = check.connect(username="chat",password="mychatapp")
+    print(request_type)
     if request_type=="connect":
         username,roomname = query["username"],query["roomname"]
         chat_messages,roomnumber = check.load_chat(roomname=roomname)
         if chat_messages=="まだルームがありません":
             return "roomを作成してください"
         else:
-            try:
-                chat_port = int(roomnumber) +10000
-                p = subprocess.Popen("python websocket.py {}".format(chat_port),shell=True,stdout=subprocess.PIPE)
-                    #print("test",subprocess_output.communicate())
-                flag = False
-                while flag ==False:
-                    print(p.stdout.readlines())
-                    if p.stdout.readlines()==[]:
-                        flag= True
-            except OSError as e:
-                print(e)
-                pass
-            #time.sleep(1)
+            #try:
+            print("poke")
+            chat_port = int(roomnumber) +10000
+            process = subprocess.Popen("python chat_server.py {}".format(chat_port),shell=True,stdout=subprocess.PIPE)
+                #print("test",subprocess_output.communicate())
+            flag = False
+            print("executed")
+            """
+            from websocket import create_connection
+
+            ws = create_connection("ws://localhost:{}/".format(chat_port))"""
+
+            #print(process.communicate())
+            #print(process.s)
+            print("stand")
+            #print(process.stdout.readlines())
+            print("12")
+            time.sleep(0.5)
             response = {}
             #test = (('test', 'こんにちは', datetime.datetime(2021, 1, 2, 19, 29, 43)),)
             """for i in range(len(chat_messages)):
@@ -134,6 +144,7 @@ def getid():
 
             response["message"] = chat_messages
             response["port"] = chat_port
+            #time.sleep(3)
             print(json.dumps(response,default=json_serial))
             return json.dumps(response,default=json_serial)
 

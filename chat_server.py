@@ -26,7 +26,7 @@ def message_received(client, server, message):
 
     user,roomname,message,time = message_dict["user"].encode("iso_8859_1").decode("utf-8"),\
     message_dict["roomname"].encode("iso_8859_1").decode("utf-8"),message_dict["message"].encode("iso_8859_1").decode("utf-8"),message_dict["time"]
-    print("request info")
+
     instance = data.database()
     instance.connect("chat","mychatapp")
     roomnumber = instance.check_room(roomname=roomname)
@@ -36,10 +36,14 @@ def message_received(client, server, message):
 if __name__ == "__main__":
     try:
         server = WebsocketServer(port=int(port), host='localhost')
+        print("1")
         # イベントで使うメソッドの設定
         server.set_fn_new_client(new_client)
+        print("2")
         server.set_fn_client_left(client_left)
+        print("3")
         server.set_fn_message_received(message_received)
+        print('4')
         # 実行
         server.run_forever()
 

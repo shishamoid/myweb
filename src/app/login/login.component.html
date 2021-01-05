@@ -1,33 +1,29 @@
-<p>login works!</p>
-<form [formGroup]="loginform" (ngSubmit)="check_user(loginform.value)">
+<form [formGroup]="loginform" (ngSubmit)="create_or_login(loginform.value)">
+  <mat-radio-group name="requestform" [(ngModel)]="requesttype" [ngModelOptions]="{standalone: true}">
+    <mat-radio-button  value="connect">
+      ログイン
+    </mat-radio-button>
+    <mat-radio-button  value="create">
+      新規ユーザー作成
+    </mat-radio-button>
+  </mat-radio-group>
 
-  <div>
-    <label for="username">
-      ユーザーネーム
-    </label>
-    <input id="username" type="text" formControlName="username">
-  </div>
 
-  <div>
-    <label for="password">
-      パスワード
-    </label>
-    <input id="password" type="password" formControlName="password">
-  </div>
-  <button class="button" type="submit">ログイン</button>
+  <mat-form-field>
+  <mat-label>名前(最大20文字)</mat-label>
+  <input matInput type="text" formControlName="username">
+  <button mat-button *ngIf="username" matSuffix mat-icon-button aria-label="Clear" >
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-form-field>
+
+<mat-form-field>
+<mat-label>パスワード(最大20文字)</mat-label>
+<input matInput type="password" formControlName="password">
+<button mat-button *ngIf="password" matSuffix mat-icon-button aria-label="Clear" >
+  <mat-icon>close</mat-icon>
+</button>
+</mat-form-field>
+  <button class="button" type="submit" *ngIf="requesttype=='connect'">ログイン</button>
+  <button class="button" type="submit" *ngIf="requesttype=='create'">作成</button>
 </form>
-
-  <form [formGroup]="createform" (ngSubmit)="create_user(createform.value)">
-    <div>
-  <label for="newuser">
-    <input formControlName="newusername">
-    </label>
-    </div>
-    <div>
-    <label for="newpassword">
-      <input type="password" formControlName="newpassword">
-      </label>
-      </div>
-    <button class="button" type="submit">ユーザー作成</button>
-    </form>
-  

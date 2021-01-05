@@ -6,15 +6,10 @@
 </head>
 
 <p>chat works!</p>
-<button #test class="test">こんにちは</button>
-<div #bird class="bird">て</div>
-<div>
-p
-</div>
+
 <div class="container">
 
-  <form [formGroup]="roomnameform" (ngSubmit)="connectchat(roomnameform.value,'connect')">
-
+    <form [formGroup]="roomnameform" (ngSubmit)="connectchat(roomnameform.value,'connect')">
     <div>
       <label for="roomname">
         roomname
@@ -30,18 +25,17 @@ p
       <button class="button" type="submit">ルームを作成</button>
     </form>
 
-<div>
 
-  </div>
-  <div>
-    <div>
-      <div *ngFor="let message of chatarray" >
-        {{message[2]}}<span>{{message[1]}}</span><span *ngIf= "message[0]&&username">{{message[0]}}</span>
+    <div class="chatmessages_flame">
+      <div *ngFor="let message of chatarray" [class.mymessage]="message[0]==username">
+        {{message[2]}}<span>{{message[1]}}</span><span>{{message[0]}}</span>
       </div>
-    </div>
+
       <form [formGroup] = "chatform" (ngSubmit)= "sendmessage(chatform.value)">
           <input formControlName="chatmessage">
           <button type= "submit">送信</button>
           </form>
     </div>
+
+  </div>
 <!--<div>{{subject}}</div>-->

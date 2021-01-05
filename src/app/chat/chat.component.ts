@@ -30,7 +30,7 @@ export class ChatComponent implements OnInit {
   createnumber: string;
   message: string;
   ws: WebSocket;
-  chatarray :string[][]
+  chatarray :string[][] =[]
   connectstatus : boolean;
 
   constructor(
@@ -93,18 +93,19 @@ export class ChatComponent implements OnInit {
     this.chatarray[last_index]= []
     this.chatarray[last_index][0] = "mymessage"
     this.chatarray[last_index][1] = data.chatmessage
+    var message_date = date.getDate().toString() + "日"
+    var message_month = (date.getMonth()+1).toString() + "月"
+    var message_time = date.getHours().toString() + ":" + date.getMinutes().toString()
     this.chatarray[last_index][2] = date.getHours().toString() + ":" + date.getMinutes().toString()
     console.log(this.chatarray)
 
     if (this.ws.readyState === WebSocket.OPEN) {
       //roomunum調整する必要あり
-
       var moji = `{"user": "${this.username}","roomname": "${this.roomname}","message": "${data.chatmessage}","time": "${time}"}`
       this.message = JSON.stringify(JSON.parse(moji))
       return this.ws.send(this.message)
     }//https://bugsdb.com/_ja/debug/19204bfe6dfe10f00bd2c0ae346f666f
   }
-
 
   roomrequest(roomname: string, username: string, request_type: string) {
     //websocket接続要求
@@ -147,10 +148,6 @@ export class ChatComponent implements OnInit {
           })
         }
       }
-    }
-    parse_date(date:Date){
-      console.log()
-
     }
 
   lender_chat(messages:[]) {

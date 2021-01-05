@@ -14,6 +14,10 @@ import { LoginComponent } from './login/login.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatInputModule} from '@angular/material/input';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatIconModule } from '@angular/material/icon';
 //import {NgxAutoScrollModule} from "ngx-auto-scroll";
 
 const myRoutes = [
@@ -36,7 +40,12 @@ const myRoutes = [
     //以下追記
     HttpClientModule,
     AppRoutingModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatRadioModule,
+    FormsModule,
+    MatInputModule,
+    MatIconModule,
+    BrowserAnimationsModule
     //RouterModule.forRoot(myRoutes,{useHash:true})
   ],
   providers: [],
