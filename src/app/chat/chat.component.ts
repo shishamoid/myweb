@@ -57,17 +57,11 @@ export class ChatComponent implements OnInit {
       this.username = params.get("username") || "";
       this.roomname = params.get("roomname") || "";
       console.log(this.roomname)
-      
+
       if(this.roomname!=""){
-          console.log(this.roomname)
-          this.roomrequest(this.roomname,this.username,"connect").subscribe(response => {
-            var port = JSON.parse(response).port
-            var message :[] = JSON.parse(response).message
-            console.log(message)
-            //console.log(this.lender_chat(message))
-            this.chatarray = this.lender_chat(message)
-            this.startchat(port)
-            });
+          this.roomrequest(this.roomname, this.username, "connect").subscribe(response => {
+                this.init_chat(this.roomname,response)
+          })
           }
 
     })
@@ -156,19 +150,23 @@ export class ChatComponent implements OnInit {
           if (response == "roomを作成してください"){
             alert(response)
           }else{
-            this.router.navigate(["/chat"],{queryParams:{username : `${this.username}`,roomname:`${data.roomname}`}})
-            var port = JSON.parse(response).port
-            var message :[] = JSON.parse(response).message
-            console.log(message)
-            //console.log(this.lender_chat(message))
-            this.chatarray = this.lender_chat(message)
-            this.roomname = data.roomname
-            this.startchat(port)
+              this.init_chat(data.roomname,response)
             }
           })
         }
       }
     }
+
+  init_chat(roomname:string,response:string){
+    this.router.navigate(["/chat"],{queryParams:{username : `${this.username}`,roomname:`${roomname}`}})
+    var port = JSON.parse(response).port
+    var message :[] = JSON.parse(response).message
+    console.log(message)
+    //console.log(this.lender_chat(message))
+    this.chatarray = this.lender_chat(message)
+    this.roomname = roomname
+    this.startchat(port)
+  }
 
   lender_chat(messages:[]) {
     //console.log("messages",messages)

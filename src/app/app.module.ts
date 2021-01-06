@@ -18,6 +18,9 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatInputModule} from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatIconModule } from '@angular/material/icon';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import {MatButtonModule} from '@angular/material/button';
+
 //import {NgxAutoScrollModule} from "ngx-auto-scroll";
 
 const myRoutes = [
@@ -45,7 +48,9 @@ const myRoutes = [
     FormsModule,
     MatInputModule,
     MatIconModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    FlexLayoutModule,
+    MatButtonModule
     //RouterModule.forRoot(myRoutes,{useHash:true})
   ],
   providers: [],

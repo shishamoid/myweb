@@ -1,29 +1,42 @@
+<div fxLayout="column" fxLayout="row wrap" fxLayoutAlign="center">
+
 <form [formGroup]="loginform" (ngSubmit)="create_or_login(loginform.value)">
+
+  <div fxLayout="row">
   <mat-radio-group name="requestform" [(ngModel)]="requesttype" [ngModelOptions]="{standalone: true}">
-    <mat-radio-button  value="connect">
+    <mat-radio-button fxFlex="50%" value="connect">
       ログイン
     </mat-radio-button>
-    <mat-radio-button  value="create">
+    <mat-radio-button fxFlex="50%" value="create">
       新規ユーザー作成
     </mat-radio-button>
   </mat-radio-group>
+  </div>
 
-
-  <mat-form-field>
+  <div fxLayout="row">
+  <mat-form-field fxFlex="100%">
   <mat-label>名前(最大20文字)</mat-label>
   <input matInput type="text" formControlName="username">
   <button mat-button *ngIf="username" matSuffix mat-icon-button aria-label="Clear" >
     <mat-icon>close</mat-icon>
   </button>
 </mat-form-field>
+</div>
 
-<mat-form-field>
+<div fxLayout="row">
+<mat-form-field fxFlex="100%">
 <mat-label>パスワード(最大20文字)</mat-label>
 <input matInput type="password" formControlName="password">
 <button mat-button *ngIf="password" matSuffix mat-icon-button aria-label="Clear" >
   <mat-icon>close</mat-icon>
 </button>
 </mat-form-field>
-  <button class="button" type="submit" *ngIf="requesttype=='connect'">ログイン</button>
-  <button class="button" type="submit" *ngIf="requesttype=='create'">作成</button>
+</div>
+  <div fxLayout="row"  fxLayoutAlign="right">
+  <button mat-raised-button class="button" type="submit" *ngIf="requesttype=='connect'">ログイン</button>
+  <button mat-raised-button class="button" type="submit" *ngIf="requesttype=='create'">これでユーザーを作成する</button>
+  </div>
 </form>
+
+
+</div>
