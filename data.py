@@ -49,9 +49,10 @@ class database():
                 self.mysql_instance.execute("insert into user_room_list.user_list(username,password) values('{}','{}')".format(username,password))
                 result = self.mysql_instance.fetchall()
                 self.mysql_connection.commit()
-                print("ユーザーが作成されました")
 
-                return result
+                return "ユーザーが作成されました"
+
+
             except Exception as e:
                 print("sql error",e)
                 return "ユーザーの作成に失敗しました"

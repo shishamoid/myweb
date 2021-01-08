@@ -11,6 +11,9 @@ import { of } from 'rxjs';
 import { catchError, map, tap, retry } from 'rxjs/operators';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { BrowserModule } from '@angular/platform-browser';
+
 
 
 @Component({
@@ -32,7 +35,8 @@ export class ChatComponent implements OnInit {
   message: string;
   ws: WebSocket;
   chatarray :string[][] =[]
-  connectstatus : boolean;
+  connectstatus : boolean = false;
+  requesttype:string ="connect";
 
 
   constructor(
@@ -44,9 +48,6 @@ export class ChatComponent implements OnInit {
     this.roomnameform = new FormGroup({
       roomname: new FormControl(''),
     });
-    this.createnewroom = new FormGroup({
-      createnumber: new FormControl(""),
-    })
     this.chatform = new FormGroup({
       chatmessage: new FormControl("")
     })
@@ -59,8 +60,9 @@ export class ChatComponent implements OnInit {
       console.log(this.roomname)
 
       if(this.roomname!=""){
-          this.roomrequest(this.roomname, this.username, "connect").subscribe(response => {
-                this.init_chat(this.roomname,response)
+            this.connectstatus=true
+            this.roomrequest(this.roomname, this.username, "connect").subscribe(response => {
+            this.init_chat(this.roomname,response)
           })
           }
 
@@ -135,6 +137,7 @@ export class ChatComponent implements OnInit {
 
   connectchat(data: any, request_type: string) {
     //request_type = create or connect
+    console.log("clicked",data.createnumber,data.roomname)
     switch(request_type){
       case "create":
         this.createnumber = data.createnumber
@@ -150,6 +153,7 @@ export class ChatComponent implements OnInit {
           if (response == "roomを作成してください"){
             alert(response)
           }else{
+            this.connectstatus = true
               this.init_chat(data.roomname,response)
             }
           })
@@ -179,7 +183,7 @@ export class ChatComponent implements OnInit {
       var message_month = (date.getMonth()+1).toString() + "月"
       var message_time = date.getHours().toString() + ":" + date.getMinutes().toString()
       result_array[i] = []
-      var flag= (this.username == messages[i][0])?"mymessage":"othermessage"
+      var flag= (this.username == messages[i][0])?"mymessage":this.username
 
       result_array[i][0] = flag
       result_array[i][1] = message_content

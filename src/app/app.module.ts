@@ -20,7 +20,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatIconModule } from '@angular/material/icon';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import {MatButtonModule} from '@angular/material/button';
-
+import { CommonModule } from '@angular/common';
 //import {NgxAutoScrollModule} from "ngx-auto-scroll";
 
 const myRoutes = [
@@ -50,7 +50,8 @@ const myRoutes = [
     MatIconModule,
     BrowserAnimationsModule,
     FlexLayoutModule,
-    MatButtonModule
+    MatButtonModule,
+    CommonModule
     //RouterModule.forRoot(myRoutes,{useHash:true})
   ],
   providers: [],

@@ -1,7 +1,35 @@
-.mymessage{
-    text-align: left;
-}
 .chatmessages_flame {
   max-height: 200;
-  overflow: scroll;
+  overflow: auto;
+  background-image: url("../../assets/img/line_chat.png");
+}
+.othermessage .message{
+  margin: 10px;
+  background-color: white;
+  border: solid;
+  border-radius: 7px;
+  border-color: white;
+}
+
+.mymessage .message{
+  margin: 10px;
+  line-height: 150%;
+  background-color: #84E148;
+  border: solid;
+  border-color: #84E148;
+  border-radius: 7px;
+}
+
+.mymessage{
+  text-align: right;
+  padding: 7px;
+}
+ .othermessage{
+   text-align: left;
+   padding: 7px;
+ }
+
+.chatroom_title{
+  background-color: #454d62;
+  text-align: center;
 }

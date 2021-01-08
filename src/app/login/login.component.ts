@@ -13,7 +13,7 @@ import { Observable, of } from 'rxjs';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatIconModule } from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
-
+import { CommonModule } from '@angular/common';  
 
 @Component({
   selector: 'app-login',
