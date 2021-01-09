@@ -1,4 +1,14 @@
 <div fxLayout="column" fxLayoutAlign="center">
+  <mat-checkbox [(ngModel)]="how_to_use" class="use_check">使い方を見る</mat-checkbox>
+  <div *ngIf="how_to_use" class="how_to_use">
+    <p>
+      1. 適当な名前とidを作成します。 名前、パスワードどちらかを忘れたらもう一回作ってください。<br>
+      2. 作成した名前とパスワードでログインします。<br>
+      3. グループを作ります。グループ名とパスワードを覚えておきます。<br>
+      4. 話したい人で、グループ名とパスワードを共有し、ログインします。<br>
+      5. 同じグループにログインしていると、リアルタイムでチャットができます。<br>
+    </p>
+  </div>
 
 <form [formGroup]="loginform" (ngSubmit)="create_or_login(loginform.value)">
 
@@ -25,7 +35,7 @@
 
 <div fxLayout="row">
 <mat-form-field fxFlex="100%">
-<mat-label>パスワード(最大20文字)</mat-label>
+<mat-label>パスワード(6~20文字)</mat-label>
 <input matInput type="password" formControlName="password">
 <button mat-button *ngIf="password" matSuffix mat-icon-button aria-label="Clear" >
   <mat-icon>close</mat-icon>
@@ -37,10 +47,5 @@
   <button mat-raised-button class="button" type="submit" *ngIf="requesttype=='create'">これでユーザーを作成する</button>
   </div>
 </form>
-
-<div>
-  使い方
-</div>
-
 
 </div>

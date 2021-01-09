@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import {Inject} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { BrowserModule } from '@angular/platform-browser';
 import { FormGroup, FormControl } from '@angular/forms';
 import {ActivatedRoute, Params} from '@angular/router';
 import { Router } from '@angular/router';
@@ -10,10 +9,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {Subject,Observer} from 'rxjs/Rx';
 import { catchError, map, tap,retry } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatIconModule } from '@angular/material/icon';
-import {MatButtonModule} from '@angular/material/button';
-import { CommonModule } from '@angular/common';  
 
 @Component({
   selector: 'app-login',
@@ -33,7 +28,7 @@ export class LoginComponent implements OnInit {
     logincheck: string;
     createuser:any;
     requesttype:string;
-
+    how_to_use:boolean= false;
 
      constructor(router :Router, http : HttpClient
       ) {
@@ -90,15 +85,20 @@ export class LoginComponent implements OnInit {
    formcheck(username:string,password:string){
      if(username==""){
        return "名前を入力してください"
-     }else if(username.length>=20){
+     }
+     else if(username.length>=20){
        return "名前が長すぎます"
      }
      else if(password.length>=20){
        return "パスワードが長すぎます"
      }
+     else if(password.length<=6 && password!=""){
+       return "パスワードが短かすぎます"
+     }
      else if(password==""){
        return "パスワードを入力してください"
-     }else{
+     }
+     else{
        return "OK"
      }
    }

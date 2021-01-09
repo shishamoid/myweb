@@ -11,10 +11,6 @@ import { of } from 'rxjs';
 import { catchError, map, tap, retry } from 'rxjs/operators';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { BrowserModule } from '@angular/platform-browser';
-
-
 
 @Component({
   selector: 'app-chat',
@@ -31,13 +27,13 @@ export class ChatComponent implements OnInit {
   roomnameform: FormGroup;
   chatform: FormGroup;
   createnewroom: FormGroup;
-  createnumber: string;
   message: string;
   ws: WebSocket;
   chatarray :string[][] =[]
   connectstatus : boolean = false;
   requesttype:string ="connect";
-
+  room_password : string;
+  how_to_use:boolean =false;
 
   constructor(
     private http: HttpClient,
@@ -47,6 +43,7 @@ export class ChatComponent implements OnInit {
     this.router = router,
     this.roomnameform = new FormGroup({
       roomname: new FormControl(''),
+      password: new FormControl(""),
     });
     this.chatform = new FormGroup({
       chatmessage: new FormControl("")
@@ -58,13 +55,6 @@ export class ChatComponent implements OnInit {
       this.username = params.get("username") || "";
       this.roomname = params.get("roomname") || "";
       console.log(this.roomname)
-
-      if(this.roomname!=""){
-            this.connectstatus=true
-            this.roomrequest(this.roomname, this.username, "connect").subscribe(response => {
-            this.init_chat(this.roomname,response)
-          })
-          }
 
     })
   }
@@ -122,10 +112,10 @@ export class ChatComponent implements OnInit {
     }//https://bugsdb.com/_ja/debug/19204bfe6dfe10f00bd2c0ae346f666f
   }
 
-  roomrequest(roomname: string, username: string, request_type: string) {
+  roomrequest(roomname: string, password: string, request_type: string) {
     //websocket接続要求
-    console.log(roomname, username, request_type)
-    var requestdata = JSON.stringify({ "request_type": request_type, "username": username, "roomname": roomname })
+    console.log(roomname, password, request_type)
+    var requestdata = JSON.stringify({ "request_type": request_type, "password": password, "roomname": roomname })
     console.log("this is request", requestdata)
     return this.http.post("/chat", requestdata, { responseType: 'text' }).pipe(catchError(this.handleError))
   }
@@ -137,27 +127,52 @@ export class ChatComponent implements OnInit {
 
   connectchat(data: any, request_type: string) {
     //request_type = create or connect
-    console.log("clicked",data.createnumber,data.roomname)
-    switch(request_type){
-      case "create":
-        this.createnumber = data.createnumber
-        this.roomrequest(data.createnumber, this.username, request_type).subscribe(response => {
-          alert(response) //roomの作成に成功しました or roomの作成に失敗しました
-        })
-        break
-      case "connect":
-        if(this.roomname==data.roomname){
-          alert("接続中です")
-        }else{
-          this.roomrequest(data.roomname, this.username, request_type).subscribe(response => {
-          if (response == "roomを作成してください"){
-            alert(response)
-          }else{
-            this.connectstatus = true
-              this.init_chat(data.roomname,response)
-            }
+    console.log("clicked",data.password,data.roomname)
+    var formstatus = this.formcheck(data.roomname,data.password)
+
+    if(formstatus=="OK"){
+      switch(request_type){
+        case "create":
+          this.roomrequest(data.roomname, data.password, request_type).subscribe(response => {
+            alert(response) //roomの作成に成功しました or roomの作成に失敗しました
           })
+          break
+        case "connect":
+          if(this.roomname==data.roomname){
+            alert("接続中です")
+          }else{
+            this.roomrequest(data.roomname, data.password, request_type).subscribe(response => {
+            if (response == "roomを作成してください"){
+              alert(response)
+            }else{
+              this.roomname = data.roomname
+              this.connectstatus = true
+                this.init_chat(data.roomname,response)
+              }
+            })
+          }
         }
+      }
+    }
+
+    formcheck(roomname:string,password:string){
+      if(roomname==""){
+        return "グループ名を入力してください"
+      }
+      else if(roomname.length>=20){
+        return "グループ名が長すぎます"
+      }
+      else if(password.length>=20){
+        return "パスワードが長すぎます"
+      }
+      else if(password.length<=6 && password!=""){
+        return "パスワードが短かすぎます"
+      }
+      else if(password==""){
+        return "パスワードを入力してください"
+      }
+      else{
+        return "OK"
       }
     }
 
@@ -191,7 +206,7 @@ export class ChatComponent implements OnInit {
         }
         return result_array
       }
-  ngAfterViewInit() {
 
+  ngAfterViewInit() {
   }
 }

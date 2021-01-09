@@ -8,7 +8,7 @@ import { LoginComponent} from "./login/login.component"
 
 const myRoutes: Routes = [
   //{path:"",component: AppComponent},
-  { path: 'main', component: MainComponent },
+  { path: '', component: MainComponent },
   { path: 'chat', component: ChatComponent},
   { path: 'login', component: LoginComponent}
 ];

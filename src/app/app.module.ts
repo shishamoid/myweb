@@ -21,14 +21,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import {MatButtonModule} from '@angular/material/button';
 import { CommonModule } from '@angular/common';
+import {MatCheckboxModule} from '@angular/material/checkbox'
 //import {NgxAutoScrollModule} from "ngx-auto-scroll";
-
-const myRoutes = [
-  //{path:"",component: AppComponent},
-  { path: 'main', component: MainComponent },
-  { path: './chat', component: ChatComponent},
-  { path: './login', component: LoginComponent},
-];
+import {MatRippleModule} from '@angular/material/core'
 
 @NgModule({
   declarations: [
@@ -51,7 +46,9 @@ const myRoutes = [
     BrowserAnimationsModule,
     FlexLayoutModule,
     MatButtonModule,
-    CommonModule
+    CommonModule,
+    MatCheckboxModule,
+    MatRippleModule
     //RouterModule.forRoot(myRoutes,{useHash:true})
   ],
   providers: [],

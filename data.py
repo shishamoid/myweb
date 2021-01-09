@@ -62,17 +62,17 @@ class database():
         self.mysql_connection.commit()
         self.mysql_connection.close()
 
-    def create_room(self,roomname):
-        check_result = self.check_room(roomname=roomname)
+    def create_room(self,roomname,password):
+        check_result = self.check_room(roomname=roomname,password=password)
         if check_result == "まだルームがありません":
             try:
                 #roomをroomlistに登録
-                self.mysql_instance.execute("insert into user_room_list.room_list(roomname) values('{}')".format(str(roomname)))
+                self.mysql_instance.execute("insert into user_room_list.room_list(room_name,password) values('{}','{}')".format(roomname,password))
                 result = self.mysql_instance.fetchall()
                 self.mysql_connection.commit()
 
                 #roomlistからroomnumberを取得　
-                self.mysql_instance.execute("select room_number from user_room_list.room_list where roomname='{}'".format(roomname))
+                self.mysql_instance.execute("select room_number from user_room_list.room_list where room_name='{}'".format(roomname))
                 result = self.mysql_instance.fetchall()
                 self.mysql_connection.commit()
 
@@ -89,8 +89,8 @@ class database():
         else:
             return "すでにルームがあります"
 
-    def check_room(self,roomname):
-        self.mysql_instance.execute("select room_number from user_room_list.room_list where roomname='{}'".format(roomname))
+    def check_room(self,roomname,password):
+        self.mysql_instance.execute("select room_number from user_room_list.room_list where room_name='{}' and password='{}'".format(roomname,password))
         search_result = self.mysql_instance.fetchall()
 
         if len(search_result)==0:
@@ -99,8 +99,8 @@ class database():
             #roomがあるならroomnumberを返す
             return search_result[0][0]
 
-    def load_chat(self,roomname):
-        check_result = self.check_room(roomname=roomname)   #roomがあるなら、check_resultにroomnumberがはいる
+    def load_chat(self,roomname,password):
+        check_result = self.check_room(roomname=roomname,password=password)   #roomがあるなら、check_resultにroomnumberがはいる
         if check_result == "まだルームがありません":
             return check_result,"_"
         else:

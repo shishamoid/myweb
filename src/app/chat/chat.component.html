@@ -6,31 +6,52 @@
 </head>
 
 <div class="container" fxLayout="column" fxLayoutAlign="center">
+  <mat-checkbox [(ngModel)]="how_to_use">使い方を見る</mat-checkbox>
+  <div *ngIf="how_to_use" class="how_to_use">
+    <p>
+      1. 適当な名前とidを作成します。 名前、パスワードどちらかを忘れたらもう一回作ってください。<br>
+      2. 作成した名前とパスワードでログインします。<br>
+      3. グループを作ります。グループ名とパスワードを覚えておきます。<br>
+      4. 話したい人で、グループ名とパスワードを共有し、ログインします。<br>
+      5. 同じグループにログインしていると、リアルタイムでチャットができます。<br>
+    </p>
+  </div>
 
   <mat-radio-group name="requestform" [(ngModel)]="requesttype" [ngModelOptions]="{standalone: true}" fxLayout="row">
     <mat-radio-button fxFlex="50%" value="connect">
       ログイン
     </mat-radio-button>
     <mat-radio-button fxFlex="50%" value="create">
-      新規をグループ作成
+      新規グループ作成
     </mat-radio-button>
   </mat-radio-group>
 
-    <form [formGroup]="roomnameform" (ngSubmit)="connectchat(roomnameform.value,requesttype)" *ngIf="requesttype=='connect'">
+    <form [formGroup]="roomnameform" (ngSubmit)="connectchat(roomnameform.value,requesttype)" *ngIf="requesttype=='connect'" fxLayout="column">
       <mat-form-field fxFlex="100%">
-      <mat-label for="roomname">
+        <mat-label for="roomname">
         グループ名を入力
-      </mat-label>
+        </mat-label>
       <input matInput id="roomname" type="text" formControlName="roomname">
+    </mat-form-field>
+    <mat-form-field>
+        <mat-label>
+        パスワード(最大20文字)
+        </mat-label>
+      <input matInput type="password" formControlName="password">
 
     </mat-form-field>
     <button class="button" type="submit" fxFlex="20%" mat-raised-button>スタート！</button>
   </form>
 
 
-  <form [formGroup] = "roomnameform" (ngSubmit) = "connectchat(createnewroom.value,requesttype)" *ngIf="requesttype=='create'">
+  <form [formGroup] = "roomnameform" (ngSubmit) = "connectchat(roomnameform.value,requesttype)" *ngIf="requesttype=='create'" fxLayout="column">
     <mat-form-field fxFlex="100%">
+      <mat-label>新規グループ名(最大20文字)</mat-label>
       <input matInput id="requestroom" type="text" formControlName="roomname">
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>パスワード(6~20文字)</mat-label>
+      <input matInput type="password" formControlName="password">
     </mat-form-field>
       <button class="button" type="submit" fxFlex="20%" mat-raised-button>ルームを作成</button>
     </form>

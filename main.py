@@ -111,29 +111,20 @@ def getid():
     check = database()
     connectioncheck = check.connect(username="chat",password="mychatapp")
     print(request_type)
+    password,roomname = query["password"],query["roomname"]
+    password= password.encode()
+    password = hashlib.sha256(password).hexdigest()
+
     if request_type=="connect":
-        username,roomname = query["username"],query["roomname"]
-        chat_messages,roomnumber = check.load_chat(roomname=roomname)
+        chat_messages,roomnumber = check.load_chat(roomname=roomname,password=password)
         if chat_messages=="まだルームがありません":
             return "roomを作成してください"
         else:
             #try:
-            print("poke")
             chat_port = int(roomnumber) +10000
             process = subprocess.Popen("python chat_server.py {}".format(chat_port),shell=True,stdout=subprocess.PIPE)
                 #print("test",subprocess_output.communicate())
             flag = False
-            print("executed")
-            """
-            from websocket import create_connection
-
-            ws = create_connection("ws://localhost:{}/".format(chat_port))"""
-
-            #print(process.communicate())
-            #print(process.s)
-            print("stand")
-            #print(process.stdout.readlines())
-            print("12")
             time.sleep(0.5)
             response = {}
             #test = (('test', 'こんにちは', datetime.datetime(2021, 1, 2, 19, 29, 43)),)
@@ -148,9 +139,7 @@ def getid():
             return json.dumps(response,default=json_serial)
 
     elif request_type=="create":
-        roomname = query["roomname"]
-        print(roomname)
-        message = check.create_room(roomname=roomname)
+        message = check.create_room(password=password,roomname=roomname)
         return message
     else:
         return "invalid request"
