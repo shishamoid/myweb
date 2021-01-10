@@ -1,6 +1,18 @@
 .component_link{
-  cursor: pointer;
   text-align: center;
-  line-height: 170%;
-  height: 25%
+  height: 20%;
+  width:100%;
+}
+.component_link mat-icon{
+  height: 50%;
+  font-size: 500%;
+  margin:auto;
+}
+.component_link h2{
+  height: 50%;
+  margin:auto;
+}
+.explain{
+  height: 30%;
+  margin: auto;
 }

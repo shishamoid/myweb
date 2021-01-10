@@ -53,9 +53,6 @@ export class ChatComponent implements OnInit {
   ngOnInit() {
     this.route.queryParamMap.subscribe((params: ParamMap) => {
       this.username = params.get("username") || "";
-      this.roomname = params.get("roomname") || "";
-      console.log(this.roomname)
-
     })
   }
 
@@ -69,12 +66,8 @@ export class ChatComponent implements OnInit {
 
   createObservableSocket() {
     return new Observable(observer => {
-      this.ws.onopen = e => console.log("繋がった")
       this.ws.onmessage = (e) => {
-        console.log("responseがありました")
-        console.log(e.data);
-        var object = JSON.parse(e.data);
-        console.log("this is response", object)
+        var object:[] = JSON.parse(e.data);
         observer.next(object);
       }
       this.ws.onerror = (event) => observer.error(event);
@@ -83,6 +76,21 @@ export class ChatComponent implements OnInit {
     );
   }
 
+  split_message(message:string){
+    //var message_list:[] = message
+    var result = ""
+    for(var i=0; i<message.length;i++){
+      result += message.charAt(i);
+      if(i%25==0 && i!=0){
+        result+='\n'
+      }
+    }
+    return result
+  }
+
+  lender_time(time:Date){
+    return time.getHours().toString() + ":" + (0 + time.getMinutes().toString()).slice(-2)
+  }
 
   sendmessage(data: any) {
     var date = new Date()
@@ -98,15 +106,13 @@ export class ChatComponent implements OnInit {
     this.chatarray[last_index]= []
     this.chatarray[last_index][0] = "mymessage"
     this.chatarray[last_index][1] = data.chatmessage
-    var message_date = date.getDate().toString() + "日"
-    var message_month = (date.getMonth()+1).toString() + "月"
-    var message_time = date.getHours().toString() + ":" + date.getMinutes().toString()
-    this.chatarray[last_index][2] = date.getHours().toString() + ":" + date.getMinutes().toString()
+    this.chatarray[last_index][2] = this.lender_time(date)
+
     console.log(this.chatarray)
 
     if (this.ws.readyState === WebSocket.OPEN) {
       //roomunum調整する必要あり
-      var moji = `{"user": "${this.username}","roomname": "${this.roomname}","message": "${data.chatmessage}","time": "${time}"}`
+      var moji = `{"username": "${this.username}","roomname": "${this.roomname}","message": "${data.chatmessage}","time": "${time}"}`
       this.message = JSON.stringify(JSON.parse(moji))
       return this.ws.send(this.message)
     }//https://bugsdb.com/_ja/debug/19204bfe6dfe10f00bd2c0ae346f666f
@@ -121,14 +127,23 @@ export class ChatComponent implements OnInit {
   }
 
   startchat(port:string) {
-    this.ws = new WebSocket(`ws://localhost:${port}`);
-    this.createObservableSocket().subscribe(msg => { console.log("message", msg) });
+    this.ws = new WebSocket(`ws://localhost:${port}`);//this.chatarray.push([msg.message,msg.time,msg.username])
+    this.createObservableSocket().subscribe((message :any) => this.receive_message(message))
+    ;
+  }
+
+  receive_message(message:any){
+    if(message.username!=this.username){
+      var date = new Date(message.time)
+      var time = this.lender_time(date)
+      this.chatarray.push([message.username,message.message,time])
+    }
   }
 
   connectchat(data: any, request_type: string) {
     //request_type = create or connect
     console.log("clicked",data.password,data.roomname)
-    var formstatus = this.formcheck(data.roomname,data.password)
+    var formstatus = this.formcheck(data.roomname,data.password,request_type)
 
     if(formstatus=="OK"){
       switch(request_type){
@@ -137,10 +152,8 @@ export class ChatComponent implements OnInit {
             alert(response) //roomの作成に成功しました or roomの作成に失敗しました
           })
           break
+
         case "connect":
-          if(this.roomname==data.roomname){
-            alert("接続中です")
-          }else{
             this.roomrequest(data.roomname, data.password, request_type).subscribe(response => {
             if (response == "roomを作成してください"){
               alert(response)
@@ -150,26 +163,31 @@ export class ChatComponent implements OnInit {
                 this.init_chat(data.roomname,response)
               }
             })
-          }
         }
       }
+    else{
+      alert(formstatus)
+    }
     }
 
-    formcheck(roomname:string,password:string){
-      if(roomname==""){
+    formcheck(roomname:string,password:string,request_type:string){
+      if(this.roomname==roomname){
+        return "接続中です"
+      }
+      else if(roomname==""){
         return "グループ名を入力してください"
-      }
-      else if(roomname.length>=20){
-        return "グループ名が長すぎます"
-      }
-      else if(password.length>=20){
-        return "パスワードが長すぎます"
-      }
-      else if(password.length<=6 && password!=""){
-        return "パスワードが短かすぎます"
       }
       else if(password==""){
         return "パスワードを入力してください"
+      }
+      else if(roomname.length>=20 && request_type=="create"){
+        return "グループ名が長すぎます"
+      }
+      else if(password.length>=20 && request_type=="create"){
+        return "パスワードが長すぎます"
+      }
+      else if(password.length<=3 && password!="" && request_type=="create"){
+        return "パスワードが短すぎます"
       }
       else{
         return "OK"
@@ -189,24 +207,33 @@ export class ChatComponent implements OnInit {
 
   lender_chat(messages:[]) {
     //console.log("messages",messages)
-    var result_array :string[][] = []
-
-    for(var i in messages){
-      var message_content:string = messages[i][1]
+    var result_array :string[][] =[]
+    for(var i = 0;i<messages.length;i++){
+      var message_content:string = this.split_message(messages[i][1])
       var date = new Date(messages[i][2])
-      var message_date = date.getDate().toString() + "日"
-      var message_month = (date.getMonth()+1).toString() + "月"
-      var message_time = date.getHours().toString() + ":" + date.getMinutes().toString()
-      result_array[i] = []
-      var flag= (this.username == messages[i][0])?"mymessage":this.username
+      var flag:string = (this.username == messages[i][0])?"mymessage":messages[i][0]
+      var message_time = this.lender_time(date)
+      var unit = [flag,message_content,message_time]
 
-      result_array[i][0] = flag
-      result_array[i][1] = message_content
-      result_array[i][2] = message_time
-        }
-        return result_array
+      //日が違ったら処理
+      var date_unit = ['_',"date",(date.getMonth()+1).toString()+ "月" + date.getDate().toString() + "日"]
+      if (i==0){
+        result_array.push(date_unit)
       }
+      else{
+        var date_recent = new Date(messages[i-1][2])
+        if((date.getDate()!=date_recent.getDate()) || (date.getMonth() !=date_recent.getMonth())){
+          result_array.push(date_unit)
+            }
+          }
 
-  ngAfterViewInit() {
+      result_array.push(unit)
+
+        }
+
+    return result_array
+  }
+
+  ngAfterViewInit(){
   }
 }

@@ -1,7 +1,8 @@
 .chatmessages_flame {
-  max-height: 200;
+  min-height: 25%;
   overflow: auto;
   background-image: url("../../assets/img/line_chat.png");
+  background-size: cover;
 }
 .othermessage .message{
   margin: 10px;
@@ -37,4 +38,22 @@
   border: solid;
   border-color: black;
   text-align: center;
+  margin: 0 0 0 auto;
+
+}
+ .send_form{
+   width: 100%;
+}
+.send_text{
+  width:90%;
+  margin: 0 0 0 auto;
+}
+
+.date {
+  background-color: #5D749D;
+  border-radius: 10px;
+  text-align: center;
+}
+.send_button{
+  background-color:
 }

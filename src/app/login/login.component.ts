@@ -27,7 +27,7 @@ export class LoginComponent implements OnInit {
     response: string;
     logincheck: string;
     createuser:any;
-    requesttype:string;
+    requesttype:string='connect';
     how_to_use:boolean= false;
 
      constructor(router :Router, http : HttpClient
@@ -92,7 +92,7 @@ export class LoginComponent implements OnInit {
      else if(password.length>=20){
        return "パスワードが長すぎます"
      }
-     else if(password.length<=6 && password!=""){
+     else if(password.length<=3 && password!=""){
        return "パスワードが短かすぎます"
      }
      else if(password==""){

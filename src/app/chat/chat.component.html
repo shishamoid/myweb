@@ -19,10 +19,10 @@
 
   <mat-radio-group name="requestform" [(ngModel)]="requesttype" [ngModelOptions]="{standalone: true}" fxLayout="row">
     <mat-radio-button fxFlex="50%" value="connect">
-      ログイン
+      グループに入る
     </mat-radio-button>
     <mat-radio-button fxFlex="50%" value="create">
-      新規グループ作成
+      グループを作成する
     </mat-radio-button>
   </mat-radio-group>
 
@@ -53,24 +53,26 @@
       <mat-label>パスワード(6~20文字)</mat-label>
       <input matInput type="password" formControlName="password">
     </mat-form-field>
-      <button class="button" type="submit" fxFlex="20%" mat-raised-button>ルームを作成</button>
+      <button class="button" type="submit" fxFlex="20%" mat-raised-button>グループを作成</button>
     </form>
-
 
     <div class="chatmessages_flame" *ngIf="connectstatus" fxLayout="column">
       <div class="chatroom_title"><font color="white" size="5">{{roomname}}</font></div>
       <div *ngFor="let message of chatarray">
+        <div *ngIf="message[0]=='_'" class= "date">
+        <span><font size="4">{{message[2]}}</font></span>
+      </div>
         <div *ngIf="message[0]=='mymessage'" class= "mymessage">
         <span class="time"><font size="2">{{message[2]}}</font></span> <span class="message"><font size="4">{{message[1]}}</font></span>
       </div>
-      <div *ngIf="message[0]!='mymessage'" class="othermessage">
+      <div *ngIf="message[0]!='mymessage'&& message[0]!='_'" class="othermessage">
         <span class="person">{{message[0]}}</span> <span class="message"><font size="4">{{message[1]}}</font></span> <span class="time"><font size="2">{{message[2]}}</font></span>
       </div>
       </div>
 
       <form [formGroup] = "chatform" (ngSubmit)= "sendmessage(chatform.value)" class="send_form"  fxLayout="row">
-          <input formControlName="chatmessage">
-          <button type= "submit">送信</button>
+          <input class="send_text" formControlName="chatmessage">
+          <button type= "submit" class="send_button">送信</button>
           </form>
     </div>
 

@@ -22,16 +22,7 @@ import websockets
 import hashlib
 #from wsrequests import WsRequests
 from websocket import create_connection
-#wsr = WsRequests()
 
-# login django
-
-# Flaskオブジェクトを生成し、セッション情報暗号化のキーを指
-
-
-#ws = GeventWebSocket(app)
-# Flaskオブジェクト、async_modeを指定して、SocketIOサーバオブジェクトを生成
-#socketio = SocketIO(app, async_mode=async_mode)
 queue_size = 10
 
 app = Flask(__name__, static_url_path='', static_folder='./dist/myweb')
@@ -99,8 +90,6 @@ def getchat():
         received_packet = client.recv()
         print(received_packet)
         receive = receive.decode("utf-8")
-        print("connected!@!")
-        print(received_packet)
 
     return app.send_static_file('index.html')
 
@@ -122,20 +111,16 @@ def getid():
         else:
             #try:
             chat_port = int(roomnumber) +10000
-            process = subprocess.Popen("python chat_server.py {}".format(chat_port),shell=True,stdout=subprocess.PIPE)
+            process = subprocess.Popen("python chat_server.py {} {}".format(chat_port,password),shell=True,stdout=subprocess.PIPE)
                 #print("test",subprocess_output.communicate())
             flag = False
             time.sleep(0.5)
             response = {}
-            #test = (('test', 'こんにちは', datetime.datetime(2021, 1, 2, 19, 29, 43)),)
-            """for i in range(len(chat_messages)):
-                for j in range(len(chat_messages[i])):
-                    if isinstance(chat_messages[i][j],datetime)"""
 
             response["message"] = chat_messages
             response["port"] = chat_port
             #time.sleep(3)
-            print(json.dumps(response,default=json_serial))
+            #print(json.dumps(response,default=json_serial))
             return json.dumps(response,default=json_serial)
 
     elif request_type=="create":
@@ -144,69 +129,6 @@ def getid():
     else:
         return "invalid request"
 
-"""@app.route("/<string:name>",methods=['GET',"POST"])
-def namepage(name):
-    if name=="/login":
-        print("this is login")
-        return app.send_static_file("index.html")
-
-    return app.static_url_path"""
-    #return app.send_static_file("index.html")
-
-#print(request.environ)
-"""@app.route("/<string:name>",methods=['GET'])
-def namepage(name):
-    print(request)
-    print("name",name)
-    print("aaaaaaaaaa")
-    return app.send_static_file("index.html")
-    #return app.send_static_file("index.html")
-
-@ws.route('/chat')
-def chat(ws):
-    print(ws)
-    print("ringos")
-    users[ws.id] = ws
-
-    for msg in backlog:
-        ws.send(msg)
-
-    while True:
-        msg = ws.receive()
-        if msg is None:
-            break
-        if msg == b"":
-            continue
-
-        backlog.append(msg)
-        for id in users:
-            if id != ws.id:
-                users[id].send(msg)
-
-    del users[ws.id]
-    return"""
-
-"""
-@socketio.on('connect', namespace='/chat')
-def test_connect():
-    print('Client connected')
-    return "poke"
-    """
-
 if __name__ == '__main__':
     app.debug = True
-    #server = WSGIServer(('localhost', 5000), app, handler_class=WebSocketHandler)
-    #server.serve_forever()
     app.run(port="5000",host="localhost")
-    #socket.run(app,debug=True)
-    #print("app running")
-    """host = "localhost"
-    port = 8080
-
-    host_port = (host, port)
-    server = WSGIServer(
-       host_port,
-       app,
-       handler_class=WebSocketHandler
-    )
-    server.serve_forever()"""
