@@ -2,12 +2,6 @@
 import sys
 from flask import Flask,request,jsonify
 
-from gevent.pywsgi import WSGIServer
-from geventwebsocket.handler import WebSocketHandler
-from flask_uwsgi_websocket import GeventWebSocket
-from flask_restful import Resource, Api, marshal_with
-#from flask_socketio import SocketIO,emit,send
-#import bbbserial as bbb
 from threading import Thread
 import time
 import socket
@@ -18,17 +12,16 @@ import subprocess
 from subprocess import PIPE
 async_mode = None
 from datetime import datetime
-import websockets
+#import websockets
 import hashlib
 #from wsrequests import WsRequests
-from websocket import create_connection
+#from websocket import create_connection
 
 queue_size = 10
 
 app = Flask(__name__, static_url_path='', static_folder='./dist/myweb')
 app.config['JSON_AS_ASCII'] = False
 app.config['SECRET_KEY'] = 'secret!'
-CORS(app)
 
 def json_serial(obj):
     if isinstance(obj, (datetime, datetime)):
@@ -38,7 +31,7 @@ def json_serial(obj):
 @app.route('/', methods=['GET'])
 def getAngular():
     #print(request.environ)
-    print(request.url)
+    #print(request.url)
     return app.send_static_file('index.html')
 
 @app.route("/login",methods=["GET"])
@@ -130,5 +123,5 @@ def getid():
         return "invalid request"
 
 if __name__ == '__main__':
-    app.debug = True
-    app.run(port="5000",host="localhost")
+#app.debug = True
+    app.run()

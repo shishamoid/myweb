@@ -44,3 +44,9 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+#1/13 add
+zappa_setting.json
+myweb-*.tar.gz
+handler_myweb-dev*.zip
+

@@ -1,4 +1,4 @@
-import MySQLdb
+import pymysql
 
 class database():
 
@@ -10,7 +10,7 @@ class database():
         flag = False
         try:
 
-            self.mysql_connection = MySQLdb.connect(user= username,password= password,host="localhost",db="user_room_list",charset="utf8")
+            self.mysql_connection = pymysql.connect(user= username,password= password,host="localhost",db="user_room_list",charset="utf8")
             self.mysql_instance = self.mysql_connection.cursor()
             self.mysql_connection.commit()
             flag = True

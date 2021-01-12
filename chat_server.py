@@ -7,8 +7,8 @@ port = sys.argv[1]
 password = sys.argv[2]
 import json
 import data
-import ast
-import websocket
+#import ast
+#import websocket
 
     # クライアントが接続してきた時のイベント
 def new_client(client, server):
