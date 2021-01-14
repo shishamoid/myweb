@@ -16,12 +16,18 @@ from datetime import datetime
 import hashlib
 #from wsrequests import WsRequests
 #from websocket import create_connection
+import logging
+
+# ログレベルを DEBUG に変更
+logging.basicConfig(level=logging.INFO)
+
 
 queue_size = 10
 
 app = Flask(__name__, static_url_path='', static_folder='./dist/myweb')
 app.config['JSON_AS_ASCII'] = False
 app.config['SECRET_KEY'] = 'secret!'
+CORS(app)
 
 def json_serial(obj):
     if isinstance(obj, (datetime, datetime)):
@@ -30,21 +36,21 @@ def json_serial(obj):
 
 @app.route('/', methods=['GET'])
 def getAngular():
-    #print(request.environ)
-    #print(request.url)
-    return app.send_static_file('index.html')
+    print("accessed!")
+    return app.send_static_file('./index.html')
 
 @app.route("/login",methods=["GET"])
 def get_info():
-
+    print("login get")
     pr = request.get_data()
 
     return app.send_static_file("index.html")
 
 @app.route("/login",methods=["POST"])
 def get_account():
+    print("login accessed!")
     logininfo = json.loads(request.get_data().decode())
-    print(logininfo)
+    print("logininfo",logininfo)
     username = logininfo["username"]
     password = logininfo["password"]
     password= password.encode()
@@ -122,6 +128,12 @@ def getid():
     else:
         return "invalid request"
 
+def aws_handler(event, context):
+    #app.run()
+    return
+
+
 if __name__ == '__main__':
 #app.debug = True
-    app.run()
+    #app.run()
+    aws_handler("1","9")

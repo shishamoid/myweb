@@ -1,4 +1,5 @@
 import pymysql
+import sys
 
 class database():
 
@@ -9,14 +10,14 @@ class database():
     def connect(self,username,password):
         flag = False
         try:
-
-            self.mysql_connection = pymysql.connect(user= username,password= password,host="localhost",db="user_room_list",charset="utf8")
+            self.mysql_connection = pymysql.connect(user= username,password= password,host="database-1.cpho5vjk7zzi.ap-northeast-1.rds.amazonaws.com",db="user_room_list",charset="utf8")
             self.mysql_instance = self.mysql_connection.cursor()
             self.mysql_connection.commit()
             flag = True
             return flag
         except Exception as e:
             print(e)
+            sys.exit()
             return flag
 
     def user_check(self,username,password):
@@ -51,7 +52,6 @@ class database():
                 self.mysql_connection.commit()
 
                 return "ユーザーが作成されました"
-
 
             except Exception as e:
                 print("sql error",e)
