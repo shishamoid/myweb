@@ -126,10 +126,10 @@ export class ChatComponent implements OnInit {
     return this.http.post("/chat", requestdata, { responseType: 'text' }).pipe(catchError(this.handleError))
   }
 
-  startchat(port:string) {
+  startchat(port:string,roomname:string) {
     this.ws = new WebSocket(`ws://localhost:${port}`);//this.chatarray.push([msg.message,msg.time,msg.username])
     this.createObservableSocket().subscribe((message :any) => this.receive_message(message))
-    ;
+    this.roomname = roomname
   }
 
   receive_message(message:any){
@@ -158,9 +158,8 @@ export class ChatComponent implements OnInit {
             if (response == "roomを作成してください"){
               alert(response)
             }else{
-              this.roomname = data.roomname
               this.connectstatus = true
-                this.init_chat(data.roomname,response)
+              this.init_chat(data.roomname,response)
               }
             })
         }
@@ -186,8 +185,11 @@ export class ChatComponent implements OnInit {
       else if(password.length>=20 && request_type=="create"){
         return "パスワードが長すぎます"
       }
-      else if(password.length<=3 && password!="" && request_type=="create"){
+      else if(password.length<=6 && password!="" && request_type=="create"){
         return "パスワードが短すぎます"
+      }
+      else if(password.match(/[/^\W+$]/)){ //半角英数+全角英数+アンダーバー
+        return "英数字とアンダーバーのみ使用可能です"
       }
       else{
         return "OK"
@@ -201,8 +203,7 @@ export class ChatComponent implements OnInit {
     console.log(message)
     //console.log(this.lender_chat(message))
     this.chatarray = this.lender_chat(message)
-    this.roomname = roomname
-    this.startchat(port)
+    this.startchat(port,roomname)
   }
 
   lender_chat(messages:[]) {

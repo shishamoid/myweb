@@ -37,7 +37,6 @@ class database():
             else:
                 return "ログイン失敗"
 
-
         except Exception as e:
             return "sqlエラー =>" + str(e)
 
@@ -92,7 +91,7 @@ class database():
     def check_room(self,roomname,password):
         self.mysql_instance.execute("select room_number from user_room_list.room_list where room_name='{}' and password='{}'".format(roomname,password))
         search_result = self.mysql_instance.fetchall()
-
+        print("check_result",search_result)
         if len(search_result)==0:
             return "まだルームがありません"
         else:

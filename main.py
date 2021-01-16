@@ -34,6 +34,11 @@ def json_serial(obj):
         return datetime.strftime(obj,'%Y-%m-%d %H:%M:%S')
     raise TypeError ("Type %s not serializable" % type(obj))
 
+def hash_function(string):
+    encode_string = string.encode()
+    hash = hashlib.sha256(encode_string).hexdigest()
+    return hash
+
 @app.route('/', methods=['GET'])
 def getAngular():
     print("accessed!")
@@ -52,9 +57,9 @@ def get_account():
     logininfo = json.loads(request.get_data().decode())
     print("logininfo",logininfo)
     username = logininfo["username"]
+    username = hash_function(username)
     password = logininfo["password"]
-    password= password.encode()
-    password = hashlib.sha256(password).hexdigest()
+    password = hash_function(password)
 
     check = database()
     connectioncheck = check.connect(username="chat",password="mychatapp")
@@ -100,8 +105,8 @@ def getid():
     connectioncheck = check.connect(username="chat",password="mychatapp")
     print(request_type)
     password,roomname = query["password"],query["roomname"]
-    password= password.encode()
-    password = hashlib.sha256(password).hexdigest()
+    password = hash_function(password)
+    roomname = hash_function(roomname)
 
     if request_type=="connect":
         chat_messages,roomnumber = check.load_chat(roomname=roomname,password=password)
@@ -110,16 +115,18 @@ def getid():
         else:
             #try:
             chat_port = int(roomnumber) +10000
-            process = subprocess.Popen("python chat_server.py {} {}".format(chat_port,password),shell=True,stdout=subprocess.PIPE)
+            print("chat_port",chat_port)
+            process = subprocess.Popen("python chat_server.py {} {}".format(chat_port,password),shell=True)
                 #print("test",subprocess_output.communicate())
             flag = False
-            time.sleep(0.5)
+            time.sleep(2)
             response = {}
 
             response["message"] = chat_messages
             response["port"] = chat_port
             #time.sleep(3)
             #print(json.dumps(response,default=json_serial))
+            print("return",json.dumps(response,default=json_serial))
             return json.dumps(response,default=json_serial)
 
     elif request_type=="create":
@@ -128,12 +135,7 @@ def getid():
     else:
         return "invalid request"
 
-def aws_handler(event, context):
-    #app.run()
-    return
-
 
 if __name__ == '__main__':
 #app.debug = True
-    #app.run()
-    aws_handler("1","9")
+    app.run()

@@ -1,15 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
-import {Inject} from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { FormGroup, FormControl } from '@angular/forms';
-import {ActivatedRoute, Params} from '@angular/router';
 import { Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import {Subject,Observer} from 'rxjs/Rx';
-import { catchError, map, tap,retry } from 'rxjs/operators';
+import { HttpClient} from '@angular/common/http';
+import { catchError} from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
-import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -60,7 +54,6 @@ export class LoginComponent implements OnInit {
     return this.http.post("/login",requestdata,{responseType: "text"}).pipe(catchError(this.handleError))
    }
 
-
    check_login(response_message : string,username:string){
      console.log(response_message)
      if(response_message=="ログイン成功"){
@@ -93,8 +86,11 @@ export class LoginComponent implements OnInit {
      else if(password.length>=20){
        return "パスワードが長すぎます"
      }
-     else if(password.length<=3 && password!=""){
-       return "パスワードが短かすぎます"
+     else if(password.length<=6 && password!=""){
+       return "パスワードが短すぎます"
+     }
+     else if(password.match(/[/^\W+$]/)){ //半角英数+全角英数+アンダーバー
+       return "英数字とアンダーバーのみ使用可能です"
      }
      else if(password==""){
        return "パスワードを入力してください"
@@ -107,9 +103,7 @@ export class LoginComponent implements OnInit {
    create_or_login(data:logininfo){
       var formstatus = this.formcheck(data.username,data.password)
       if(formstatus=="OK"){
-        console.log(this.requesttype)
         this.http_request(data.username,data.password,this.requesttype).subscribe(response => {this.check_login(JSON.parse(response).message,data.username)})
-
       }else{
         alert(formstatus)
     }
