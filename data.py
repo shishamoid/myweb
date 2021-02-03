@@ -1,16 +1,21 @@
 import pymysql
+
 import sys
+import json
+
+database_key = json.load(open("./awskeys.json"))["database_key"]
 
 class database():
 
-    def __init__(self):
+    def __init__(self,database_key=database_key):
         self.username = ""
         self.password = ""
+        self.database_key = database_key
 
     def connect(self,username,password):
         flag = False
         try:
-            self.mysql_connection = pymysql.connect(user= username,password= password,host="database-1.cpho5vjk7zzi.ap-northeast-1.rds.amazonaws.com",db="user_room_list",charset="utf8")
+            self.mysql_connection = pymysql.connect(user= username,password= password,host=databasekey,db="user_room_list",charset="utf8")
             self.mysql_instance = self.mysql_connection.cursor()
             self.mysql_connection.commit()
             flag = True
