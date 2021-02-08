@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import sys
-from flask import Flask,request,jsonify
+from flask import Flask,request,jsonify,make_response,render_template,send_file
 
 from threading import Thread
 import time
@@ -17,14 +17,26 @@ import hashlib
 #from wsrequests import WsRequests
 #from websocket import create_connection
 import logging
-
 # ログレベルを DEBUG に変更
 logging.basicConfig(level=logging.INFO)
+import boto3
+from boto3.dynamodb.conditions import Key
 
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table("chat_session")
+
+# テーブルスキャン
+def operation_scan():
+    scanData = table.scan()
+    items=scanData['Items']
+    #print(scanData)
+    return items
+
+#openration_scan()
 
 queue_size = 10
 
-app = Flask(__name__, static_url_path='', static_folder='./dist/myweb')
+app = Flask(__name__, static_url_path='', static_folder='./dist/myweb',template_folder="./dist/myweb")
 app.config['JSON_AS_ASCII'] = False
 app.config['SECRET_KEY'] = 'secret!'
 CORS(app)
@@ -42,14 +54,14 @@ def hash_function(string):
 @app.route('/', methods=['GET'])
 def getAngular():
     print("accessed!")
-    return app.send_static_file('./index.html')
+    return render_template('./index.html')
 
 @app.route("/login",methods=["GET"])
 def get_info():
     print("login get")
-    pr = request.get_data()
+    r = request.get_data()
 
-    return app.send_static_file("index.html")
+    return render_template("index.html")
 
 @app.route("/login",methods=["POST"])
 def get_account():
@@ -69,7 +81,18 @@ def get_account():
         logincheck = check.user_check(username=username,password=password)
         close=check.close_connection()
         response = json.dumps({"message": logincheck})
-        return response
+
+        if logincheck=="ログイン成功":
+            #cookieセット\
+            print("logincheck",logincheck)
+            print("username",check.username)
+            cookie = make_response(response)
+            cookie.set_cookie("sessionid",value=check.username)
+            #セッションスタート
+            #table.put_item(Item={"now_login":"test2"})
+            return cookie
+        else:
+            return response
 
     if logininfo["request_type"] == "create":
 
@@ -82,20 +105,15 @@ def get_account():
 def getchat():
     data = request.get_data()
     a = data.decode("utf-8")
+    print("chat get")
+    v = request.cookies.get("sessionid")
+    if v:
+        print(v)
+        return render_template('index.html',error="nothing")
+    else:
+        print("セッション情報がありません")
+        return send_file("error.html")
 
-    if request.environ.get("wsgi.websocket"):
-        print("chat accessed")
-        host = "localhost"
-        port = 5001
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.bind((host, port))
-        server.listen(queue_size)
-        client, address = server.accept()
-        received_packet = client.recv()
-        print(received_packet)
-        receive = receive.decode("utf-8")
-
-    return app.send_static_file('index.html')
 
 @app.route("/chat",methods=["POST"])
 def getid():
@@ -104,9 +122,14 @@ def getid():
     check = database()
     connectioncheck = check.connect(username="chat",password="mychatapp")
     print(request_type)
+
     password,roomname = query["password"],query["roomname"]
     password = hash_function(password)
     roomname = hash_function(roomname)
+
+    #cookieチェック
+    v = request.cookies.get("sessionid")
+    print("cookie",v)
 
     if request_type=="connect":
         chat_messages,roomnumber = check.load_chat(roomname=roomname,password=password)
@@ -118,19 +141,24 @@ def getid():
             print("chat_port",chat_port)
             process = subprocess.Popen("python chat_server.py {} {}".format(chat_port,password),shell=True)
                 #print("test",subprocess_output.communicate())
+            print("chat_messages",chat_messages)
+
             flag = False
             time.sleep(2)
             response = {}
-
             response["message"] = chat_messages
             response["port"] = chat_port
-            #time.sleep(3)
-            #print(json.dumps(response,default=json_serial))
+
+            #cookieのセッションidでdbと照合
+            response["username"] = "undefined"
+
             print("return",json.dumps(response,default=json_serial))
+
             return json.dumps(response,default=json_serial)
 
     elif request_type=="create":
         message = check.create_room(password=password,roomname=roomname)
+        print("create response",message)
         return message
     else:
         return "invalid request"

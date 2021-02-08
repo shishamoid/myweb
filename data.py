@@ -3,10 +3,11 @@ import pymysql
 import sys
 import json
 
-database_key = json.load(open("./awskeys.json"))["database_key"]
+
 
 class database():
 
+    database_key = json.load(open("./awskeys.json"))["stage"]["dev"]
     def __init__(self,database_key=database_key):
         self.username = ""
         self.password = ""
@@ -15,7 +16,7 @@ class database():
     def connect(self,username,password):
         flag = False
         try:
-            self.mysql_connection = pymysql.connect(user= username,password= password,host=databasekey,db="user_room_list",charset="utf8")
+            self.mysql_connection = pymysql.connect(user= username,password= password,host=self.database_key,db="user_room_list",charset="utf8")
             self.mysql_instance = self.mysql_connection.cursor()
             self.mysql_connection.commit()
             flag = True
@@ -94,6 +95,8 @@ class database():
             return "すでにルームがあります"
 
     def check_room(self,roomname,password):
+        print("roomname",roomname)
+        print("password",password)
         self.mysql_instance.execute("select room_number from user_room_list.room_list where room_name='{}' and password='{}'".format(roomname,password))
         search_result = self.mysql_instance.fetchall()
         print("check_result",search_result)
@@ -111,7 +114,6 @@ class database():
             self.mysql_instance.execute("select username,message,time from chatmessages.roomnumber_{}".format(check_result))
             result = self.mysql_instance.fetchall()
             self.mysql_connection.commit()
-
             return result,check_result
 
 

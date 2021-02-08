@@ -50,10 +50,7 @@ export class ChatComponent implements OnInit {
     })
   }
 
-  ngOnInit() {
-    this.route.queryParamMap.subscribe((params: ParamMap) => {
-      this.username = params.get("username") || "";
-    })
+  ngOnInit(){
   }
 
   handleError<T>(operation = 'operation', result?: T) {
@@ -159,6 +156,8 @@ export class ChatComponent implements OnInit {
               alert(response)
             }else{
               this.connectstatus = true
+              console.log("response",response)
+              console.log("userid",this.username)
               this.init_chat(data.roomname,response)
               }
             })
@@ -197,9 +196,11 @@ export class ChatComponent implements OnInit {
     }
 
   init_chat(roomname:string,response:string){
-    this.router.navigate(["/chat"],{queryParams:{username : `${this.username}`,roomname:`${roomname}`}})
+
     var port = JSON.parse(response).port
     var message :[] = JSON.parse(response).message
+    this.username = JSON.parse(response).username
+    console.log("username",this.username)
     console.log(message)
     //console.log(this.lender_chat(message))
     this.chatarray = this.lender_chat(message)
