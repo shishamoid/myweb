@@ -21,18 +21,11 @@ import logging
 logging.basicConfig(level=logging.INFO)
 import boto3
 from boto3.dynamodb.conditions import Key
+import random, string
+
 
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table("chat_session")
-
-# テーブルスキャン
-def operation_scan():
-    scanData = table.scan()
-    items=scanData['Items']
-    #print(scanData)
-    return items
-
-#openration_scan()
+table = dynamodb.Table("session_manegement")
 
 queue_size = 10
 
@@ -50,6 +43,10 @@ def hash_function(string):
     encode_string = string.encode()
     hash = hashlib.sha256(encode_string).hexdigest()
     return hash
+
+def make_session_id(length):
+    return ''.join([random.choice(string.ascii_letters + string.digits) for i in range(length)])
+
 
 @app.route('/', methods=['GET'])
 def getAngular():
@@ -85,11 +82,14 @@ def get_account():
         if logincheck=="ログイン成功":
             #cookieセット\
             print("logincheck",logincheck)
-            print("username",check.username)
-            cookie = make_response(response)
-            cookie.set_cookie("sessionid",value=check.username)
+            print("check.username",check.username)
+            print("username",username)
             #セッションスタート
-            #table.put_item(Item={"now_login":"test2"})
+            sessionid = make_session_id(100)
+            table.put_item(Item={"sessionid":sessionid,"userid":username})
+            cookie = make_response(response)
+            cookie.set_cookie("sessionid",value=sessionid)
+
             return cookie
         else:
             return response
@@ -104,16 +104,21 @@ def get_account():
 @app.route('/chat', methods=['GET'])
 def getchat():
     data = request.get_data()
+    client_username = request.args.get("username")
+    print("client_username",client_username)
     a = data.decode("utf-8")
-    print("chat get")
-    v = request.cookies.get("sessionid")
-    if v:
-        print(v)
+    #cookieチェック
+    client_sessionid = request.cookies.get("sessionid")
+    server_username = table.get_item(Key={"sessionid":client_sessionid})["Item"]["userid"]
+    print("client_sessionid",client_username)
+    print("server_sessionid",server_username)
+
+    if client_username==server_username:
+        print("あってる")
         return render_template('index.html',error="nothing")
     else:
         print("セッション情報がありません")
         return send_file("error.html")
-
 
 @app.route("/chat",methods=["POST"])
 def getid():
@@ -126,10 +131,6 @@ def getid():
     password,roomname = query["password"],query["roomname"]
     password = hash_function(password)
     roomname = hash_function(roomname)
-
-    #cookieチェック
-    v = request.cookies.get("sessionid")
-    print("cookie",v)
 
     if request_type=="connect":
         chat_messages,roomnumber = check.load_chat(roomname=roomname,password=password)
@@ -151,8 +152,6 @@ def getid():
 
             #cookieのセッションidでdbと照合
             response["username"] = "undefined"
-
-            print("return",json.dumps(response,default=json_serial))
 
             return json.dumps(response,default=json_serial)
 
