@@ -51,6 +51,10 @@ export class ChatComponent implements OnInit {
   }
 
   ngOnInit(){
+    this.route.queryParams.subscribe(query => {
+      console.log("クエリ",query)
+      this.username = query['username'];
+    })
   }
 
   handleError<T>(operation = 'operation', result?: T) {
@@ -64,11 +68,11 @@ export class ChatComponent implements OnInit {
   createObservableSocket() {
     return new Observable(observer => {
       this.ws.onmessage = (e) => {
-        var object:[] = JSON.parse(e.data);
-        observer.next(object);
+        var object:[] = JSON.parse(e.data)
+        observer.next(object)
       }
-      this.ws.onerror = (event) => observer.error(event);
-      this.ws.onclose = (event) => observer.complete();
+      this.ws.onerror = (event) => observer.error(event)
+      this.ws.onclose = () => observer.complete()
     }
     );
   }
@@ -111,14 +115,15 @@ export class ChatComponent implements OnInit {
       //roomunum調整する必要あり
       var moji = `{"username": "${this.username}","roomname": "${this.roomname}","message": "${data.chatmessage}","time": "${time}"}`
       this.message = JSON.stringify(JSON.parse(moji))
+      console.log("send",this.message)
       return this.ws.send(this.message)
     }//https://bugsdb.com/_ja/debug/19204bfe6dfe10f00bd2c0ae346f666f
   }
 
   roomrequest(roomname: string, password: string, request_type: string) {
     //websocket接続要求
-    console.log(roomname, password, request_type)
-    var requestdata = JSON.stringify({ "request_type": request_type, "password": password, "roomname": roomname })
+    console.log(roomname, password, request_type,this.username)
+    var requestdata = JSON.stringify({ "request_type": request_type, "password": password, "roomname": roomname ,"username": this.username})
     console.log("this is request", requestdata)
     return this.http.post("/chat", requestdata, { responseType: 'text' }).pipe(catchError(this.handleError))
   }
@@ -178,14 +183,14 @@ export class ChatComponent implements OnInit {
       else if(password==""){
         return "パスワードを入力してください"
       }
-      else if(roomname.length>=20 && request_type=="create"){
-        return "グループ名が長すぎます"
+      else if(roomname.length>=20){
+        return "グループ名は20文字未満です"
       }
-      else if(password.length>=20 && request_type=="create"){
-        return "パスワードが長すぎます"
+      else if(password.length>=20){
+        return "パスワードは20文字未満です"
       }
-      else if(password.length<=6 && password!="" && request_type=="create"){
-        return "パスワードが短すぎます"
+      else if(password.length<=6 && password!=""){
+        return "パスワードは6文字以上です"
       }
       else if(password.match(/[/^\W+$]/)){ //半角英数+全角英数+アンダーバー
         return "英数字とアンダーバーのみ使用可能です"
@@ -196,7 +201,6 @@ export class ChatComponent implements OnInit {
     }
 
   init_chat(roomname:string,response:string){
-
     var port = JSON.parse(response).port
     var message :[] = JSON.parse(response).message
     this.username = JSON.parse(response).username

@@ -5,32 +5,48 @@ port = sys.argv[1]
 password = sys.argv[2]
 import json
 import data
-from main import hash_function
 
-from flask import Flask,request,jsonify,make_response,render_template,send_file
 from websocket_server import WebsocketServer
 import boto3
 from boto3.dynamodb.conditions import Key
+import random
+
+
+from chalice import Chalice
+from boto3.session import Session
+
+
+app = Chalice(app_name="chalice-chat")
+app.websocket_api.configure
+app.websocket_api.session = Session()
+connection_id=1
+message="ぽ"
+app.websocket_api.send(connection_id, message)
+
+
+"""
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table("roomnumber_manegement")
+
+table.put_item(Key={"roomid":int(random.uniform(10,10000)),"roomname":roomname})
+table.get_item(Key={"roomid":client_sessionid})["Item"]["roomname"]
 """
 
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table("chat_session")
-# テーブルスキャン
-def operation_scan():
-    scanData = table.scan()
-    items=scanData['Items']
-    #print(scanData)
-    return items
-"""
 #import ast
 #import websocket
+#print(dir("p"))
 
-    # クライアントが接続してきた時のイベント
+# クライアントが接続してきた時のイベント
 def new_client(client, server):
+    print("========")
+    print("clinet handler",dirclient["handler"])
+    print("server")
+    print("clinet",client)
+    print("server",server)
     print('New client {}:{} has joined.'.format(client['address'][0], client['address'][1]))
 
-    # クライアントへメッセージ送信
-    #server.send_message(client,json.dumps({"info":"接続できた"}))
+# クライアントへメッセージ送信
+#server.send_message(client,json.dumps({"info":"接続できた"}))
 
 # クライアントが切断した時のイベント
 def client_left(client, server):
@@ -41,17 +57,19 @@ def message_received(client, server, message):
     message_dict = json.loads(message,encoding="utf-8")
     username,roomname,message,time = message_dict["username"].encode("iso_8859_1").decode("utf-8"),\
     message_dict["roomname"].encode("iso_8859_1").decode("utf-8"),message_dict["message"].encode("iso_8859_1").decode("utf-8"),message_dict["time"]
-    print("received",message)
-    print(client)
-    print("username",username)
 
     #session確認
     #operation_scan()["new_login"]
 
     instance = data.database()
     instance.connect("chat","mychatapp")
-    roomname = hash_function(roomname)
-    roomnumber = instance.check_room(roomname=roomname,password=password)
+    print("++++++++++++++++++")
+    print("roomname",roomname)
+    print("password",password)
+    #roomnumber = instance.check_room(roomname=roomname,password=password)
+    print("roomnumber",roomnumber)
+    print("username",username)
+    print("message",message)
     instance.create_chat(username=username,roomnumber=roomnumber,message=message,time_str=time)
     print("send_message",message)
     server.send_message_to_all(json.dumps({"username":username,"message":message,"time":time},ensure_ascii=False))

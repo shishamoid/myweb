@@ -34,7 +34,7 @@ export class LoginComponent implements OnInit {
        password: new FormControl(''),
      });
       }
-      ngOnInit(): void {
+      ngOnInit(){
       }
 
    handleError<T>(operation = 'operation', result?: T) {
@@ -80,6 +80,9 @@ export class LoginComponent implements OnInit {
      if(username==""){
        return "名前を入力してください"
      }
+     else if(password==""){
+       return "パスワードを入力してください"
+     }
      else if(username.length>=20){
        return "名前が長すぎます"
      }
@@ -91,9 +94,6 @@ export class LoginComponent implements OnInit {
      }
      else if(password.match(/[/^\W+$]/)){ //半角英数+全角英数+アンダーバー
        return "英数字とアンダーバーのみ使用可能です"
-     }
-     else if(password==""){
-       return "パスワードを入力してください"
      }
      else{
        return "OK"
