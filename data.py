@@ -95,11 +95,8 @@ class database():
             return "すでにルームがあります"
 
     def check_room(self,roomname,password):
-        print("roomname",roomname)
-        print("password",password)
         self.mysql_instance.execute("select room_number from user_room_list.room_list where room_name='{}' and password='{}'".format(roomname,password))
         search_result = self.mysql_instance.fetchall()
-        print("check_result",search_result)
         if len(search_result)==0:
             return "まだルームがありません"
         else:
