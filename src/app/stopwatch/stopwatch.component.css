@@ -1,0 +1,39 @@
+.title {
+  font-size: 200%;
+  margin-left: 10%;
+  margin-top:5%
+}
+
+.stopwatch {
+  padding-top: 10%;
+}
+
+@media screen and (min-width: 960px)
+{
+  .stopwatch {
+    width: 80%;
+    margin: auto;
+    padding-top: 5%;
+  }
+	/* 960px以上に適用されるCSS（PC用） */
+}
+
+
+#nowtime {
+  font-size: 500%;
+  text-align: center;
+}
+#laptime {
+  font-size: 400%;
+  text-align: center;
+}
+.buttonarea{
+  margin-top: 10%;
+}
+.buttonarea button{
+
+  font-size: 150%;
+  width: 40%;
+  padding: 3%;
+  margin: 5%;
+}

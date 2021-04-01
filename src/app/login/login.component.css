@@ -3,10 +3,42 @@
   width:80%;
   margin: auto;
 }
-.submit_button{
-  width:80%;
+.select_button mat-radio-group{
+  margin:auto;
+}
+
+.how_to_use{
+  width: 90%;
+  margin: auto;
+  text-align: center;
+  font-size: 120%;
+}
+
+@media screen and (min-width: 960px)
+{
+  .form_area{
+    width: 70%;
+  }
+}
+
+.form_area{
+  width: 80%;
+  height: 80%;
   margin: auto;
 }
-.use_check{
-  margin-right: auto;
+
+.use_check2{
+  width: 60%;
+  margin: auto;
+}
+.use_check2 mat-checkbox{
+  margin-left: 80%;
+}
+.submit_button{
+  width: 60%;
+  margin: auto;
+}
+
+.submit_button button{
+  margin-left: 80%;
 }

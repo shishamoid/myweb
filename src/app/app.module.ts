@@ -23,7 +23,8 @@ import {MatButtonModule} from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import {MatCheckboxModule} from '@angular/material/checkbox'
 //import {NgxAutoScrollModule} from "ngx-auto-scroll";
-import {MatRippleModule} from '@angular/material/core'
+import {MatRippleModule} from '@angular/material/core';
+import { StopwatchComponent } from './stopwatch/stopwatch.component'
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import {MatRippleModule} from '@angular/material/core'
     MainComponent,
     ChatComponent,
     LoginComponent,
+    StopwatchComponent,
     //NgxAutoScrollModule,
   ],
   imports: [
