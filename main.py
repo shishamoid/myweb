@@ -127,6 +127,10 @@ def get_account():
     else:
         return "認証エラー"
 
+@app.route("/stopwatch",methods=["GET"])
+def getstopwatch():
+    return render_template("index.html")
+
 @app.route('/chat', methods=['GET'])
 def getchat():
     data = request.get_data()

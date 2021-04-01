@@ -15,15 +15,14 @@ import random
 from chalice import Chalice
 from boto3.session import Session
 
-
+"""
 app = Chalice(app_name="chalice-chat")
 app.websocket_api.configure
 app.websocket_api.session = Session()
 connection_id=1
 message="ぽ"
 app.websocket_api.send(connection_id, message)
-
-
+"""
 """
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table("roomnumber_manegement")
@@ -39,7 +38,7 @@ table.get_item(Key={"roomid":client_sessionid})["Item"]["roomname"]
 # クライアントが接続してきた時のイベント
 def new_client(client, server):
     print("========")
-    print("clinet handler",dirclient["handler"])
+    print("clinet handler",client["handler"])
     print("server")
     print("clinet",client)
     print("server",server)
@@ -66,7 +65,7 @@ def message_received(client, server, message):
     print("++++++++++++++++++")
     print("roomname",roomname)
     print("password",password)
-    #roomnumber = instance.check_room(roomname=roomname,password=password)
+    roomnumber = instance.check_room(roomname=roomname,password=password)
     print("roomnumber",roomnumber)
     print("username",username)
     print("message",message)

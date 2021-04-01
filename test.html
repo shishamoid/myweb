@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="./stopwatch.js"></script>
+  </head>
+  <body>
+    Time
+    <div id="nowtime">0.00</div>
+    <br>
+    laptime
+      <div id="laptime">0.00</div>
+  <div class="stopwatch">
+    <button id="start" onclick="stopwatch.startTime()">
+      スタート
+    </button>
+    <button id="stop" onclick="stopwatch.stopTime()">
+      ストップ
+    </button>
+    <button id="lap" onclick="stopwatch.Lap()">
+      ラップ
+    </button>
+    <button id="reset" onclick="stopwatch.resetTime()">
+      リセット
+    </button>
+  </div>
+  </body>
+</html>

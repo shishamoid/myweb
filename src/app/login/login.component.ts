@@ -60,7 +60,7 @@ export class LoginComponent implements OnInit {
        alert(`ようこそ${username}さん！`)
        this.router.navigate(["/chat"],{queryParams:{username : `${username}`}})
      }else if(response_message=="ログイン失敗"){
-        alert("名前、パスワードが違います")
+       alert("名前、パスワードが違います")
      }else{
        alert(response_message)
      }

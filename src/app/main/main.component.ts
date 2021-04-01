@@ -1,6 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-//追加
-
 
 @Component({
   selector: 'app-main',

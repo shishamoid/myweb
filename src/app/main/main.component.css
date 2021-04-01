@@ -1,18 +1,31 @@
 .component_link{
-  text-align: center;
-  height: 20%;
-  width:100%;
+  height: 90%;
 }
-.component_link mat-icon{
-  height: 50%;
+
+@media screen and (min-width: 960px)
+{
+  .component_link{
+    width: 50%;
+    margin: auto;
+  }
+	/* 960px以上に適用されるCSS（PC用） */
+}
+
+.contents mat-icon{
+  height: 100%;
   font-size: 500%;
   margin:auto;
+}
+
+
+.contents{
+  width: 90%;
+  margin: auto;
 }
 .component_link h2{
   height: 50%;
   margin:auto;
 }
 .explain{
-  height: 30%;
   margin: auto;
 }
