@@ -192,7 +192,7 @@ def getid():
             #try:
             chat_port = int(roomnumber) +10000
             print("chat_port",chat_port)
-            process = subprocess.Popen("python chat_server.py {} {}".format(chat_port,password),shell=True)
+            process = subprocess.Popen("python chat_server_local.py {} {}".format(chat_port,password),shell=True)
                 #print("test",subprocess_output.communicate())
             print("chat_messages",chat_messages)
 
