@@ -24,7 +24,9 @@ import { CommonModule } from '@angular/common';
 import {MatCheckboxModule} from '@angular/material/checkbox'
 //import {NgxAutoScrollModule} from "ngx-auto-scroll";
 import {MatRippleModule} from '@angular/material/core';
-import { StopwatchComponent } from './stopwatch/stopwatch.component'
+import { StopwatchComponent } from './stopwatch/stopwatch.component';
+import { GraphQLModule } from './graphql.module'
+import { CookieService } from 'ngx-cookie-service';
 
 @NgModule({
   declarations: [
@@ -50,10 +52,11 @@ import { StopwatchComponent } from './stopwatch/stopwatch.component'
     MatButtonModule,
     CommonModule,
     MatCheckboxModule,
-    MatRippleModule
+    MatRippleModule,
+    GraphQLModule
     //RouterModule.forRoot(myRoutes,{useHash:true})
   ],
-  providers: [],
+  providers: [CookieService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

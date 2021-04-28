@@ -11,6 +11,8 @@ import { of } from 'rxjs';
 import { catchError, map, tap, retry } from 'rxjs/operators';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Apollo, gql,Mutation} from 'apollo-angular';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-chat',
@@ -34,11 +36,23 @@ export class ChatComponent implements OnInit {
   requesttype:string ="connect";
   room_password : string;
   how_to_use:boolean =false;
+  //atomの補完が古い?↓
+  createchat = gql`mutation createchat($sessionid: String!,$username: String!,$roomname: String!){
+    createchat(sessionid: $sessionid,username: $username,roomname:$roomname) {
+      sessionid
+      username
+      roomname
+      }
+    }
+  `;
+
 
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
-    private router:Router
+    private router:Router,
+    private apollo:Apollo,
+    private cookie:CookieService
   ) {
     this.router = router,
     this.roomnameform = new FormGroup({
@@ -56,6 +70,21 @@ export class ChatComponent implements OnInit {
       this.username = query['username'];
     })
   }
+
+  sendchat(){
+    console.log("graphql")
+    this.apollo.mutate<any>({
+      mutation: this.createchat,
+      variables: {
+        sessionid: this.cookie.get("sessionid"),
+        username: this.username,
+        roomname:this.roomname
+      }
+    }).subscribe(data => {
+      console.log(data)
+    })
+  }
+
 
   handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
@@ -132,6 +161,7 @@ export class ChatComponent implements OnInit {
     this.ws = new WebSocket(`ws://localhost:${port}`);//this.chatarray.push([msg.message,msg.time,msg.username])
     this.createObservableSocket().subscribe((message :any) => this.receive_message(message))
     this.roomname = roomname
+    this.sendchat()
   }
 
   receive_message(message:any){
