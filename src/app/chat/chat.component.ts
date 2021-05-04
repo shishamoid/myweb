@@ -1,12 +1,9 @@
-import { AfterViewInit, Component, ElementRef, ViewChild, OnInit } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
-import { Subject, Observable, Observer } from 'rxjs/Rx';
-import { Injectable } from '@angular/core';
+import { Observable} from 'rxjs/Rx';
 //import {Md5} from 'ts-md5/dist/md5';
 import { WebSocketSubject } from 'rxjs/webSocket';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { LoginComponent } from '../login/login.component'
 import { of } from 'rxjs';
 import { catchError, map, tap, retry } from 'rxjs/operators';
 import { FormGroup, FormControl } from '@angular/forms';
@@ -157,10 +154,10 @@ export class ChatComponent implements OnInit {
     return this.http.post("/chat", requestdata, { responseType: 'text' }).pipe(catchError(this.handleError))
   }
 
-  startchat(port:string,roomname:string) {
-    this.ws = new WebSocket(`ws://localhost:${port}`);//this.chatarray.push([msg.message,msg.time,msg.username])
+  startchat(roomname:string) {
+    var tmpport = 12345
+    this.ws = new WebSocket(`ws://localhost:${tmpport}`);//this.chatarray.push([msg.message,msg.time,msg.username])
     this.createObservableSocket().subscribe((message :any) => this.receive_message(message))
-    this.roomname = roomname
     this.sendchat()
   }
 
@@ -231,14 +228,13 @@ export class ChatComponent implements OnInit {
     }
 
   init_chat(roomname:string,response:string){
-    var port = JSON.parse(response).port
     var message :[] = JSON.parse(response).message
     this.username = JSON.parse(response).username
+    this.roomname = roomname
     console.log("username",this.username)
     console.log(message)
-    //console.log(this.lender_chat(message))
     this.chatarray = this.lender_chat(message)
-    this.startchat(port,roomname)
+    this.startchat(roomname)
   }
 
   lender_chat(messages:[]) {
@@ -264,7 +260,6 @@ export class ChatComponent implements OnInit {
           }
 
       result_array.push(unit)
-
         }
 
     return result_array

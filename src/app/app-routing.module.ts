@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { ChatComponent } from './chat/chat.component';
 import { MainComponent } from './main/main.component';
-import { AppComponent } from './app.component';
 import { LoginComponent} from "./login/login.component"
 import { StopwatchComponent} from "./stopwatch/stopwatch.component"
 
