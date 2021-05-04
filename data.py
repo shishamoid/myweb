@@ -72,19 +72,23 @@ class database():
         if check_result == "まだルームがありません":
             try:
                 #roomをroomlistに登録
-                self.mysql_instance.execute("insert into user_room_list.room_list(room_name,password) values('{}','{}')".format(roomname,password))
+                self.mysql_instance.execute("insert into user_room_list.room_list(roomname,password) values('{}','{}')".format(roomname,password))
                 result = self.mysql_instance.fetchall()
                 self.mysql_connection.commit()
 
-                #roomlistからroomnumberを取得　
+                #roomlistからroomnumberを取得
+                """
                 self.mysql_instance.execute("select room_number from user_room_list.room_list where room_name='{}'".format(roomname))
                 result = self.mysql_instance.fetchall()
                 self.mysql_connection.commit()
+                """
 
                 #roomnumberでtableをつくる timeはクライアントからおくられてくるのを使う
+                """
                 self.mysql_instance.execute("create table if not exists chatmessages.roomnumber_{}(username varchar(30),message varchar(100),time datetime)".format(str(result[0][0])))
                 result = self.mysql_instance.fetchall()
                 self.mysql_connection.commit()
+                """
 
                 return "roomの作成に成功しました"
             except Exception as e:
@@ -95,7 +99,7 @@ class database():
             return "すでにルームがあります"
 
     def check_room(self,roomname,password):
-        self.mysql_instance.execute("select room_number from user_room_list.room_list where room_name='{}' and password='{}'".format(roomname,password))
+        self.mysql_instance.execute("select roomname from user_room_list.room_list where roomname='{}' and password='{}'".format(roomname,password))
         search_result = self.mysql_instance.fetchall()
         if len(search_result)==0:
             return "まだルームがありません"
@@ -106,34 +110,22 @@ class database():
     def load_chat(self,roomname,password):
         check_result = self.check_room(roomname=roomname,password=password)   #roomがあるなら、check_resultにroomnumberがはいる
         if check_result == "まだルームがありません":
-            return check_result,"_"
+            return check_result
         else:
-            self.mysql_instance.execute("select username,message,time from chatmessages.roomnumber_{}".format(check_result))
+            self.mysql_instance.execute("select username,message,timestamp from chatmessages.chathistory where roomname='{}'".format(check_result))
             result = self.mysql_instance.fetchall()
             self.mysql_connection.commit()
-            return result,check_result
-
-
-    def create_chat(self,roomnumber,username,message,time_str):
-        try:
-            self.mysql_instance.execute("select cast('{}' as datetime)".format(time_str))
-            time_tuple = self.mysql_instance.fetchall()
-            time = time_tuple[0][0]
-            self.mysql_instance.execute("insert into chatmessages.roomnumber_{}(username,message,time) values('{}','{}','{}')".format(roomnumber,username,message,time))
-            self.mysql_connection.commit()
-            message = "メッセージを送りました"
-        except Exception as e:
-            print("sql error",e)
-            message = "メッセージを送れませんでした。"
-            pass
-        return message
+            return result
 
 if __name__=="__main__":
 
     check = database()
     connectioncheck = check.connect(username="chat",password="mychatapp")
-    create_user = check.create_user(username="test",password="test")
+    create_user = check.create_user(username="testuser",password="testpass")
     logincheck = check.user_check(username="test",password="test")
-    create_chat = check.create_room("test")
-    print(check.load_chat("test"))
-    check.create_chat(roomnumber="test",username="testuser",message="test")
+    create_chat = check.create_room("testroom","testpassword")
+    print(check.load_chat("testroom","testpassword"))
+    result = check.load_chat("testroom","testpassword")
+    print(result)
+    import json
+    json.dumps(result)

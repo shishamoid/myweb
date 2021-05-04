@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-import sys
+import sys,os,glob
 from flask import Flask,request,jsonify,make_response,render_template,send_file
 
 from threading import Thread
@@ -13,7 +13,6 @@ from subprocess import PIPE
 async_mode = None
 from datetime import datetime
 
-#import websockets
 import hashlib
 #from wsrequests import WsRequests
 #from websocket import create_connection
@@ -24,16 +23,24 @@ import boto3
 from boto3.dynamodb.conditions import Key
 import random, string
 
-
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table("session_manegement")
+table = dynamodb.Table("MywebChatTable")
+#table.update_item(Item={"sessionid":"5718","username":"testfromubuntu"})
+table.update_item(
+        Key={"sessionid":"test"},
+        UpdateExpression="set username = :tmp",
+        ExpressionAttributeValues={
+            ':tmp': 'test2'
+        })
+
 
 queue_size = 10
 
-app = Flask(__name__, static_url_path='', static_folder='./dist/myweb',template_folder="./dist/myweb")
+app = Flask(__name__, static_url_path='', static_folder='dist/myweb',template_folder="dist/myweb")
 app.config['JSON_AS_ASCII'] = False
 app.config['SECRET_KEY'] = 'secret!'
 CORS(app)
+
 
 def json_serial(obj):
     if isinstance(obj, (datetime, datetime)):
@@ -75,7 +82,8 @@ def form_check(username,password,request_type):
 @app.route('/', methods=['GET'])
 def getAngular():
     print("accessed!")
-    return render_template('./index.html')
+
+    return render_template("./index.html")
 
 @app.route("/login",methods=["GET"])
 def get_info():
@@ -112,7 +120,7 @@ def get_account():
                 print("username",username)
                 #セッションスタート
                 sessionid = make_session_id(100)
-                table.put_item(Item={"sessionid":sessionid,"userid":username})
+                table.put_item(Item={"sessionid":sessionid,"username":username})
                 cookie = make_response(response)
                 cookie.set_cookie("sessionid",value=sessionid)
                 return cookie
@@ -140,12 +148,10 @@ def getchat():
     #cookieチェック
     client_sessionid = request.cookies.get("sessionid")
     try:
-        server_username = table.get_item(Key={"sessionid":client_sessionid})["Item"]["userid"]
+        server_username = table.get_item(Key={"sessionid":client_sessionid})["Item"]["username"]
     except KeyError:
-        print("cookieに対応するuseridはありません")
+        print("cookieに対応するusernameはありません")
         return send_file("error.html")
-
-    #client_username = hash_function(client_username)
 
     if client_username==server_username:
         return render_template('index.html',error="nothing")
@@ -159,24 +165,26 @@ def getid():
     request_type,password,roomname,client_username = query["request_type"],query["password"],query["roomname"],query["username"]
     #client_username = hash_function(client_username)
     client_sessionid = request.cookies.get("sessionid")
-    server_username = table.get_item(Key={"sessionid":client_sessionid})["Item"]["userid"]
+    server_username = table.get_item(Key={"sessionid":client_sessionid})["Item"]["username"]
     print("client_sessionid",client_sessionid)
     print("server_username",server_username)
     print("client_username",client_username)
     print(request_type,password,roomname,client_username)
     print(form_check(username=roomname,password=password,request_type=request_type))
 
-    if server_username == client_username and form_check(username=roomname,password=password,request_type=request_type):
-        print("ok")
-    else:
-        print("invalid request")
+    if server_username != client_username:
+        print("invalid cookie")
         return "invalid request"
+    elif not form_check(username=roomname,password=password,request_type=request_type):
+        print("invalid form type")
+        return "invalid request"
+    else:
+        print("OK")
 
     check = database()
     connectioncheck = check.connect(username="chat",password="mychatapp")
 
     password = hash_function(password)
-    #roomname = hash_function(roomname)
 
     if request_type=="create":
         message = check.create_room(password=password,roomname=roomname)
@@ -185,36 +193,33 @@ def getid():
 
     elif request_type=="connect":
 
-        chat_messages,roomnumber = check.load_chat(roomname=roomname,password=password)
+        chat_messages = check.load_chat(roomname=roomname,password=password)
         if chat_messages=="まだルームがありません":
             return "roomを作成してください"
         else:
-            #try:
-            chat_port = int(roomnumber) +10000
-            print("chat_port",chat_port)
-            process = subprocess.Popen("python chat_server_local.py {} {}".format(chat_port,password),shell=True)
-                #print("test",subprocess_output.communicate())
-            print("chat_messages",chat_messages)
-
-            flag = False
-            time.sleep(2)
             response = {}
             response["message"] = chat_messages
-            response["port"] = chat_port
             response["username"] = server_username
 
-            response_json = json.dumps(response,default=json_serial)
-            #response = make_response(response_json)
-            #リロード用cookie
-            #table.put_item(Item={"sessionid":sessionid,"userid":username})
-            cookie = make_response(response)
-            cookie.set_cookie("room_sessionid",value="23333")
+            response_json = json.dumps(response)
+            response = make_response(response_json)
 
-            return cookie
+            #roomnameの項目を追加
+            try:
+                table.update_item(
+                        Key={"sessionid":client_sessionid},
+                        UpdateExpression="set roomname = :tmp",
+                        ExpressionAttributeValues={
+                            ':tmp': roomname
+                        })
+
+            except Exception as e:
+                print(e)
+                return e
+
+            return response
 
 
 if __name__ == '__main__':
-#app.debug = True
+    #app.debug = True
     app.run()
-
-#datetime.date()

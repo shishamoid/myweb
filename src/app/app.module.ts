@@ -7,12 +7,10 @@ import { MainComponent } from './main/main.component';
 import { ChatComponent } from './chat/chat.component';
 
 //以下追記 ルーティング
-import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 
 //追加
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatInputModule} from '@angular/material/input';
