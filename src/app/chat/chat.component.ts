@@ -2,14 +2,49 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Observable} from 'rxjs/Rx';
 //import {Md5} from 'ts-md5/dist/md5';
-import { WebSocketSubject } from 'rxjs/webSocket';
+import { WebSocketSubject,webSocket } from 'rxjs/webSocket';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { of } from 'rxjs';
 import { catchError, map, tap, retry } from 'rxjs/operators';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Apollo, gql,Mutation} from 'apollo-angular';
+import { Apollo, QueryRef,gql,Mutation} from 'apollo-angular';
 import { CookieService } from 'ngx-cookie-service';
+//import { Subscription } from 'rxjs/Subscription';
+import {GraphQLModule} from '../graphql.module';
+
+//import gql from 'graphql-tag'
+import {AfterViewInit, ElementRef, ViewChild} from '@angular/core';
+//import { createSubscriptionHandshakeLink } from 'aws-appsync-subscription-link';
+
+const subscribechat = gql`subscription mysubscription {
+  oncallCreateMywebChat {
+    message
+    timestamp
+  }
+}
+`
+
+//atomの補完が古い?↓
+const createchat = gql`mutation createMywebChat($sessionid: ID!,$message: String!,$timestamp: String!)
+{
+  createMywebChat(sessionid: $sessionid,message: $message,timestamp:$timestamp) {
+    message
+    timestamp
+    }
+  }
+`;
+
+const querychat = gql`
+query MyQuery ($sessionid: ID!){
+  getChatHistory(sessionid: $sessionid){
+    username
+    roomname
+    message
+    timestamp
+  }
+}
+`
 
 @Component({
   selector: 'app-chat',
@@ -33,16 +68,11 @@ export class ChatComponent implements OnInit {
   requesttype:string ="connect";
   room_password : string;
   how_to_use:boolean =false;
-  //atomの補完が古い?↓
-  createchat = gql`mutation createchat($sessionid: String!,$username: String!,$roomname: String!){
-    createchat(sessionid: $sessionid,username: $username,roomname:$roomname) {
-      sessionid
-      username
-      roomname
-      }
-    }
-  `;
 
+  chatSubscription:any;
+  commentsQuery: QueryRef<any>;
+  gqlSocket: WebSocketSubject<any>
+  lastchat :HTMLElement
 
   constructor(
     private http: HttpClient,
@@ -52,8 +82,9 @@ export class ChatComponent implements OnInit {
     private cookie:CookieService
   ) {
     this.router = router,
+    //this.apollo = apollo,
     this.roomnameform = new FormGroup({
-      roomname: new FormControl(''),
+      roomname: new FormControl(""),
       password: new FormControl(""),
     });
     this.chatform = new FormGroup({
@@ -63,25 +94,76 @@ export class ChatComponent implements OnInit {
 
   ngOnInit(){
     this.route.queryParams.subscribe(query => {
-      console.log("クエリ",query)
       this.username = query['username'];
     })
-  }
-
-  sendchat(){
-    console.log("graphql")
-    this.apollo.mutate<any>({
-      mutation: this.createchat,
-      variables: {
-        sessionid: this.cookie.get("sessionid"),
-        username: this.username,
-        roomname:this.roomname
+    this.apollo.subscribe({
+      query:querychat,
+      variables:{
+        sessionid:this.cookie.get("sessionid")
       }
-    }).subscribe(data => {
-      console.log(data)
+    }).subscribe((data:any)=>this.init_chat(data.data.getChatHistory[0],data.data.getChatHistory),(error:any)=>console.log("error",error))
+
+    this.apollo.subscribe({
+      query:subscribechat,
+    }).subscribe((data:any)=>this.receive_message(data),(error:any)=>console.log("error",error))
+
+
+    this.gqlSocket = webSocket({
+     url: 'wss://mz2mvhqg7ze5zhbaxiy5g5anpu.appsync-realtime-api.ap-northeast-1.amazonaws.com/graphql',
+     protocol: 'graphql-ws',
+   })
+    //this.gqlSocket.subscribe(response=>console.log("response",response))
+
+    /*var ss = this.apollo.watchQuery<any>({
+      query:querychat,
+      variables: {
+        sessionid: this.cookie.get("sessionid")
+      }
+    }).valueChanges.subscribe().subscribe((data:any)=>this.receive_message(data),(error:any)=>console.log("error",error))*/
+    //this.subscchat.subscribe()
+    /*this.commentsQuery = this.apollo.watchQuery<any>({
+      query: subscribechat
+    })
+    this.commentsQuery.subscribeToMore({
+      document: subscribechat,
+      updateQuery: ()=>{
+        console.log("subsub")
+      }
+    })
+    */;
+    //this.chatSubscription.subscribeTomore
+  }
+  sub(){
+    this.gqlSocket.next({
+      payload: {
+        query: subscribechat
+      }
     })
   }
 
+  subscchat(){
+    console.log("サブスクライバ")
+    return this.apollo.subscribe({
+      query: subscribechat
+    })
+  }
+
+  sendchat(sessionid:string,message:string,timestamp:string){
+    this.apollo.mutate<any>({
+      mutation: createchat,
+      variables: {
+        sessionid:sessionid,
+        message: message,
+        timestamp: timestamp
+      },
+    }).subscribe()
+    this.apollo.subscribe({
+      query:subscribechat
+    }).subscribe((data:any)=>this.receive_message(data),(error:any)=>console.log("error",error))
+    console.log("asdfsdfasdfasdffds",this.apollo.subscribe({
+      query:subscribechat
+    }).subscribe((data:any)=>this.receive_message(data),(error:any)=>console.log("error",error)).closed)
+  }
 
   handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
@@ -120,6 +202,9 @@ export class ChatComponent implements OnInit {
   }
 
   sendmessage(data: any) {
+    if(data.message==""){
+       return "";
+    }
     var date = new Date()
     var time = date.getFullYear()
       + '/' + ('0' + (date.getMonth() + 1)).slice(-2)
@@ -127,43 +212,46 @@ export class ChatComponent implements OnInit {
       + ' ' + ('0' + date.getHours()).slice(-2)
       + ':' + ('0' + date.getMinutes()).slice(-2)
       + ':' + ('0' + date.getSeconds()).slice(-2)
-    console.log(date.getTime())
-
+    //console.log(date.getTime())
     var last_index:number= this.chatarray.length
     this.chatarray[last_index]= []
     this.chatarray[last_index][0] = "mymessage"
     this.chatarray[last_index][1] = data.chatmessage
     this.chatarray[last_index][2] = this.lender_time(date)
-
-    console.log(this.chatarray)
-
-    if (this.ws.readyState === WebSocket.OPEN) {
+    this.sendchat(this.cookie.get("sessionid"),data.chatmessage,time)
+    /*if (this.ws.readyState === WebSocket.OPEN) {
       //roomunum調整する必要あり
       var moji = `{"username": "${this.username}","roomname": "${this.roomname}","message": "${data.chatmessage}","time": "${time}"}`
       this.message = JSON.stringify(JSON.parse(moji))
       console.log("send",this.message)
       return this.ws.send(this.message)
     }//https://bugsdb.com/_ja/debug/19204bfe6dfe10f00bd2c0ae346f666f
-  }
+
+  */
+  return ""}
 
   roomrequest(roomname: string, password: string, request_type: string) {
     //websocket接続要求
     console.log(roomname, password, request_type,this.username)
-    var requestdata = JSON.stringify({ "request_type": request_type, "password": password, "roomname": roomname ,"username": this.username})
+    var requestdata = JSON.stringify({ "request_type": request_type, "password": password, "roomname": roomname})
     console.log("this is request", requestdata)
     return this.http.post("/chat", requestdata, { responseType: 'text' }).pipe(catchError(this.handleError))
   }
 
   startchat(roomname:string) {
-    var tmpport = 12345
-    this.ws = new WebSocket(`ws://localhost:${tmpport}`);//this.chatarray.push([msg.message,msg.time,msg.username])
-    this.createObservableSocket().subscribe((message :any) => this.receive_message(message))
-    this.sendchat()
+
+    //var tmpport = 12345
+
+    //this.ws = new WebSocket(`ws://localhost:${tmpport}`);//this.chatarray.push([msg.message,msg.time,msg.username])
+    //this.createObservableSocket().subscribe((message :any) => this.receive_message(message))
+
+    //this.sendchat()
   }
 
   receive_message(message:any){
+    console.log("メッセージ",message)
     if(message.username!=this.username){
-      var date = new Date(message.time)
+      var date = new Date(message.timestamp)
       var time = this.lender_time(date)
       this.chatarray.push([message.username,message.message,time])
     }
@@ -188,9 +276,7 @@ export class ChatComponent implements OnInit {
               alert(response)
             }else{
               this.connectstatus = true
-              console.log("response",response)
-              console.log("userid",this.username)
-              this.init_chat(data.roomname,response)
+              this.init_chat(data,response)
               }
             })
         }
@@ -227,23 +313,28 @@ export class ChatComponent implements OnInit {
       }
     }
 
-  init_chat(roomname:string,response:string){
-    var message :[] = JSON.parse(response).message
-    this.username = JSON.parse(response).username
-    this.roomname = roomname
-    console.log("username",this.username)
-    console.log(message)
-    this.chatarray = this.lender_chat(message)
-    this.startchat(roomname)
+  init_chat(data:any,response:any){
+    try {
+      //var roomname=;
+      this.roomname = data.roomname
+      this.chatarray = this.lender_chat(response)
+      this.connectstatus = true
+      //スクロール
+
+    }
+    catch{
+      console.log("初めて")
+    }
+    //this.startchat(roomname)
   }
 
   lender_chat(messages:[]) {
-    //console.log("messages",messages)
     var result_array :string[][] =[]
     for(var i = 0;i<messages.length;i++){
-      var message_content:string = this.split_message(messages[i][1])
-      var date = new Date(messages[i][2])
-      var flag:string = (this.username == messages[i][0])?"mymessage":messages[i][0]
+      var response_1 = JSON.parse(JSON.stringify(messages[i]))
+      var message_content:string = this.split_message(response_1.message)
+      var date = new Date(response_1.timestamp)
+      var flag:string = (this.username == response_1.username)?"mymessage":response_1.username
       var message_time = this.lender_time(date)
       var unit = [flag,message_content,message_time]
 
@@ -253,18 +344,30 @@ export class ChatComponent implements OnInit {
         result_array.push(date_unit)
       }
       else{
-        var date_recent = new Date(messages[i-1][2])
+        var date_recent = new Date(JSON.parse(JSON.stringify(messages[i-1])).timestamp)
         if((date.getDate()!=date_recent.getDate()) || (date.getMonth() !=date_recent.getMonth())){
           result_array.push(date_unit)
             }
           }
-
       result_array.push(unit)
         }
-
     return result_array
+  }
+  scroll(){
+    let target  = document.getElementById("lastchat")
+    //let target = this.lastchat;
+    console.log("target",target)
+    if(target){
+      target.scrollTop = target.scrollHeight;
+      //target.scrollIntoView(false)
+    }
+    console.log("Kk")
+
   }
 
   ngAfterViewInit(){
+    this.scroll()
+  }
+  ngAfterViewChecked(){
   }
 }
