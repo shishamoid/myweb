@@ -55,9 +55,8 @@
     </mat-form-field>
       <button class="button" type="submit" fxFlex="20%" mat-raised-button>グループを作成</button>
     </form>
-
+    <div class="chatroom_title"><font color="white" size="5">{{roomname}}</font></div>
     <div class="chatmessages_flame" *ngIf="connectstatus" fxLayout="column">
-      <div class="chatroom_title"><font color="white" size="5">{{roomname}}</font></div>
       <div *ngFor="let message of chatarray">
         <div *ngIf="message[0]=='_'" class= "date">
         <span><font size="4">{{message[2]}}</font></span>
@@ -69,12 +68,13 @@
         <span class="person">{{message[0]}}</span> <span class="message"><font size="4">{{message[1]}}</font></span> <span class="time"><font size="2">{{message[2]}}</font></span>
       </div>
       </div>
+      <div id="lastchat">testa</div>
 
-      <form [formGroup] = "chatform" (ngSubmit)= "sendmessage(chatform.value)" class="send_form"  fxLayout="row">
-          <input class="send_text" formControlName="chatmessage">
-          <button type= "submit" class="send_button">送信</button>
-          </form>
     </div>
+    <form [formGroup] = "chatform" (ngSubmit)= "sendmessage(chatform.value)" *ngIf="connectstatus" class="send_form"  fxLayout="row">
+        <input class="send_text" formControlName="chatmessage">
+        <button type= "submit" class="send_button">送信</button>
+        </form>
 
   </div>
 <!--<div>{{subject}}</div>-->

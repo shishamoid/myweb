@@ -1,6 +1,7 @@
 .chatmessages_flame {
   min-height: 25%;
-  overflow: auto;
+  max-height: 300px;
+  overflow-y: scroll;
   background-image: url("../../assets/img/line_chat.png");
   background-size: cover;
 }
@@ -31,6 +32,7 @@
  }
 
 .chatroom_title{
+  margin-top: 60px;
   background-color: #454d62;
   text-align: center;
 }

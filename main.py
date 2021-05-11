@@ -23,15 +23,27 @@ import boto3
 from boto3.dynamodb.conditions import Key
 import random, string
 
+from gql import gql, Client
+#from gql.transport.aiohttp import AIOHTTPTransport
+from gql.transport.requests import RequestsHTTPTransport
+#gql.transport.aiohttp.AIOHTTPTransport
+
+transport = RequestsHTTPTransport(
+    url='https://mz2mvhqg7ze5zhbaxiy5g5anpu.appsync-api.ap-northeast-1.amazonaws.com/graphql',
+    headers={"x-api-key":"da2-puirc5dyvrhzjljjhcdyglhvya"}
+)
+
+client = Client(transport=transport, fetch_schema_from_transport=True)
+
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table("MywebChatTable")
 #table.update_item(Item={"sessionid":"5718","username":"testfromubuntu"})
-table.update_item(
+"""table.update_item(
         Key={"sessionid":"test"},
         UpdateExpression="set username = :tmp",
         ExpressionAttributeValues={
             ':tmp': 'test2'
-        })
+        })"""
 
 
 queue_size = 10
@@ -142,67 +154,82 @@ def getstopwatch():
 @app.route('/chat', methods=['GET'])
 def getchat():
     data = request.get_data()
-    client_username = request.args.get("username")
-    print("client_username",client_username)
-    a = data.decode("utf-8")
     #cookieチェック
     client_sessionid = request.cookies.get("sessionid")
+
+    server_username = table.get_item(Key={"sessionid":client_sessionid})["Item"]["username"]
     try:
         server_username = table.get_item(Key={"sessionid":client_sessionid})["Item"]["username"]
     except KeyError:
         print("cookieに対応するusernameはありません")
         return send_file("error.html")
 
-    if client_username==server_username:
-        return render_template('index.html',error="nothing")
-    else:
-        print("セッション情報がありません")
-        return send_file("error.html")
+    #if client_username==server_username:
+    return render_template('index.html',error="nothing")
 
 @app.route("/chat",methods=["POST"])
 def getid():
     query = json.loads(request.get_data().decode())
-    request_type,password,roomname,client_username = query["request_type"],query["password"],query["roomname"],query["username"]
+    request_type,password,roomname= query["request_type"],query["password"],query["roomname"]
     #client_username = hash_function(client_username)
     client_sessionid = request.cookies.get("sessionid")
     server_username = table.get_item(Key={"sessionid":client_sessionid})["Item"]["username"]
+    #roomname = table.get_item(Key={"sessionid":client_sessionid})["Item"]["roomname"]
     print("client_sessionid",client_sessionid)
     print("server_username",server_username)
-    print("client_username",client_username)
-    print(request_type,password,roomname,client_username)
     print(form_check(username=roomname,password=password,request_type=request_type))
 
-    if server_username != client_username:
-        print("invalid cookie")
-        return "invalid request"
-    elif not form_check(username=roomname,password=password,request_type=request_type):
+    if not form_check(username=roomname,password=password,request_type=request_type):
         print("invalid form type")
         return "invalid request"
     else:
         print("OK")
 
     check = database()
-    connectioncheck = check.connect(username="chat",password="mychatapp")
 
+    print("接続できた")
     password = hash_function(password)
 
     if request_type=="create":
         message = check.create_room(password=password,roomname=roomname)
-        print("create response",message)
+        #print("create response",message)
         return message
 
     elif request_type=="connect":
 
-        chat_messages = check.load_chat(roomname=roomname,password=password)
+        #chat_messages = check.load_chat(roomname=roomname,password=password)
+        # Provide a GraphQL query
+        chat_messages = "適当"
+
         if chat_messages=="まだルームがありません":
             return "roomを作成してください"
         else:
+            sessionid_1 = '"{}"'.format(client_sessionid)
+            query = gql(
+                """
+                query getChatHistory {
+                  getChatHistory(sessionid:""" + sessionid_1 + """) {
+                    username
+                    message
+                    timestamp
+                  }
+                }
+            """
+            )
+
+            # Execute the query on the transport
+            result = client.execute(query)["getChatHistory"]
+            #print(result)
+
             response = {}
-            response["message"] = chat_messages
+            #response["message"] = chat_messages
+            #print("result")
+            #response["message"] = [result[:]["message"],result[:]["username"],result[:]["timestamp"]]
+            response["message"] = result
             response["username"] = server_username
 
             response_json = json.dumps(response)
-            response = make_response(response_json)
+            #response = make_response(response_json)
 
             #roomnameの項目を追加
             try:
@@ -217,7 +244,8 @@ def getid():
                 print(e)
                 return e
 
-            return response
+            #print(response_json)
+            return response_json
 
 
 if __name__ == '__main__':

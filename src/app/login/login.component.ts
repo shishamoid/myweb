@@ -57,7 +57,6 @@ export class LoginComponent implements OnInit {
    check_login(response_message : string,username:string){
      console.log(response_message)
      if(response_message=="ログイン成功"){
-       alert(`ようこそ${username}さん！`)
        this.router.navigate(["/chat"],{queryParams:{username : `${username}`}})
      }else if(response_message=="ログイン失敗"){
        alert("名前、パスワードが違います")
