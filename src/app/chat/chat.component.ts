@@ -320,11 +320,14 @@ export class ChatComponent implements OnInit {
       this.chatarray = this.lender_chat(response)
       this.connectstatus = true
       //スクロール
-
     }
     catch{
       console.log("初めて")
     }
+    /*console.log("data",data)
+    this.roomname = data.roomname
+    this.chatarray = this.lender_chat(response)
+    this.connectstatus = true*/
     //this.startchat(roomname)
   }
 
@@ -362,7 +365,6 @@ export class ChatComponent implements OnInit {
       //target.scrollIntoView(false)
     }
     console.log("Kk")
-
   }
 
   ngAfterViewInit(){

@@ -107,45 +107,73 @@ def get_info():
 @app.route("/login",methods=["POST"])
 def get_account():
     logininfo = json.loads(request.get_data().decode())
-    print("logininfo",logininfo)
     username = logininfo["username"]
     password = logininfo["password"]
+
     request_type = logininfo["request_type"]
 
     if form_check(username,password,request_type):
 
         password = hash_function(password)
-        #username = hash_function(username)
-
-        check = database()
-        connectioncheck = check.connect(username="chat",password="mychatapp")
-
-        if logininfo["request_type"] == "connect":
-            logincheck = check.user_check(username=username,password=password)
-            close=check.close_connection()
-            response = json.dumps({"message": logincheck})
-
-            if logincheck=="ログイン成功":
-                #cookieセット\
-                print("logincheck",logincheck)
-                print("check.username",check.username)
-                print("username",username)
-                #セッションスタート
-                sessionid = make_session_id(100)
-                table.put_item(Item={"sessionid":sessionid,"username":username})
-                cookie = make_response(response)
-                cookie.set_cookie("sessionid",value=sessionid)
-                return cookie
-            else:
-                return response
-
-        if logininfo["request_type"] == "create":
-            createcheck = check.create_user(username=username,password=password)
-            close=check.close_connection()
-            return json.dumps({"message":createcheck})
-
+        password = '"{}"'.format(password)
+        username = '"{}"'.format(username)
+        print(password,username)
     else:
         return "認証エラー"
+
+    if logininfo["request_type"] == "connect":
+
+        query = gql(
+            """
+            query  {
+              getuser(username:""" + username + """,password: """ + password + """) {
+                password
+              }
+            }
+        """
+        )
+        #print(password)
+        result = client.execute(query)["getuser"]
+        try:
+            if result["password"] == password.replace('"',""):
+                print("ログイン成功、",result["password"])
+                logincheck="ログイン成功"
+            else:
+                logincheck = "ログイン失敗"
+        except KeyError:
+            logincheck="ログイン失敗"
+        response = json.dumps({"message": logincheck})
+
+        if logincheck=="ログイン成功":
+            #cookieセット\
+            #セッションスタート
+            sessionid = make_session_id(100)
+            table.put_item(Item={"sessionid":sessionid,"username":username.replace('"',"")})
+            cookie = make_response(response)
+            cookie.set_cookie("sessionid",value=sessionid)
+            return cookie
+        else:
+            return response
+
+    if logininfo["request_type"] == "create":
+        query = gql(
+            """
+            mutation createuser {
+              createuser(username:""" + username + """, password: """ + password + """) {
+                username
+                password
+              }
+            }
+        """
+        )
+        try:
+            result = client.execute(query)["createuser"]
+            result = "ユーザーが作成されました"
+        except Exception as e:
+            print("error",e)
+            result = "error"
+        return json.dumps({"message":result})
+
 
 @app.route("/stopwatch",methods=["GET"])
 def getstopwatch():
@@ -154,11 +182,10 @@ def getstopwatch():
 @app.route('/chat', methods=['GET'])
 def getchat():
     data = request.get_data()
-    #cookieチェック
-    client_sessionid = request.cookies.get("sessionid")
 
-    server_username = table.get_item(Key={"sessionid":client_sessionid})["Item"]["username"]
     try:
+        #cookieチェック
+        client_sessionid = request.cookies.get("sessionid")
         server_username = table.get_item(Key={"sessionid":client_sessionid})["Item"]["username"]
     except KeyError:
         print("cookieに対応するusernameはありません")
@@ -171,40 +198,83 @@ def getchat():
 def getid():
     query = json.loads(request.get_data().decode())
     request_type,password,roomname= query["request_type"],query["password"],query["roomname"]
-    #client_username = hash_function(client_username)
     client_sessionid = request.cookies.get("sessionid")
     server_username = table.get_item(Key={"sessionid":client_sessionid})["Item"]["username"]
-    #roomname = table.get_item(Key={"sessionid":client_sessionid})["Item"]["roomname"]
-    print("client_sessionid",client_sessionid)
-    print("server_username",server_username)
-    print(form_check(username=roomname,password=password,request_type=request_type))
 
     if not form_check(username=roomname,password=password,request_type=request_type):
         print("invalid form type")
         return "invalid request"
     else:
-        print("OK")
+        print("form check OK")
+    print("username",roomname,"password",password)
 
-    check = database()
-
-    print("接続できた")
     password = hash_function(password)
+    password = '"{}"'.format(password)
+    roomname = '"{}"'.format(roomname)
 
     if request_type=="create":
-        message = check.create_room(password=password,roomname=roomname)
-        #print("create response",message)
-        return message
+
+        query = gql(
+            """
+            mutation createroom {
+              createroom(roomname:""" + roomname + """, password: """ + password + """) {
+                roomname
+                password
+              }
+            }
+        """
+        )
+        try:
+            result = client.execute(query)["createroom"]
+            print("作成",result)
+            result = "roomが作成されました。"
+
+        except Exception as e:
+            result = e
+            print(e)
+
+        return result
 
     elif request_type=="connect":
-
         #chat_messages = check.load_chat(roomname=roomname,password=password)
         # Provide a GraphQL query
-        chat_messages = "適当"
+
+        query = gql(
+            """
+            query  {
+              getroom(roomname:""" + roomname + """,password: """ + password + """) {
+                password
+              }
+            }
+        """
+        )
+        result = client.execute(query)["getroom"]
+
+        if result["password"]==password.replace('"',""):
+            print("ログイン成功、",result["password"])
+            logincheck="ログイン成功"
+            chat_messages="roomあり"
+        else:
+            logincheck="ログイン失敗"
+            chat_messages = "まだルームがありません"
 
         if chat_messages=="まだルームがありません":
             return "roomを作成してください"
         else:
             sessionid_1 = '"{}"'.format(client_sessionid)
+            #roomnameの項目を追加
+            try:
+                table.update_item(
+                        Key={"sessionid":client_sessionid},
+                        UpdateExpression="set roomname = :tmp",
+                        ExpressionAttributeValues={
+                            ':tmp': roomname.replace('"',"")
+                        })
+
+            except Exception as e:
+                print(e)
+                return e
+
             query = gql(
                 """
                 query getChatHistory {
@@ -220,8 +290,8 @@ def getid():
             # Execute the query on the transport
             result = client.execute(query)["getChatHistory"]
             #print(result)
-
             response = {}
+            print("いままでの",result)
             #response["message"] = chat_messages
             #print("result")
             #response["message"] = [result[:]["message"],result[:]["username"],result[:]["timestamp"]]
@@ -231,18 +301,7 @@ def getid():
             response_json = json.dumps(response)
             #response = make_response(response_json)
 
-            #roomnameの項目を追加
-            try:
-                table.update_item(
-                        Key={"sessionid":client_sessionid},
-                        UpdateExpression="set roomname = :tmp",
-                        ExpressionAttributeValues={
-                            ':tmp': roomname
-                        })
 
-            except Exception as e:
-                print(e)
-                return e
 
             #print(response_json)
             return response_json
