@@ -15,25 +15,57 @@ import {GraphQLModule} from '../graphql.module';
 
 //import gql from 'graphql-tag'
 import {AfterViewInit, ElementRef, ViewChild} from '@angular/core';
+//import {API,  graphqlOperation } from '@aws-amplify/api'
+import {WebSocketLink} from '@apollo/client/link/ws';
+import { createSubscriptionHandshakeLink } from 'aws-appsync-subscription-link';
+
+import {split,ApolloClientOptions, InMemoryCache,ApolloLink, ApolloClient} from '@apollo/client/core';
+import {HttpLink} from 'apollo-angular/http';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
+
+
+import { setContext } from '@apollo/client/link/context';
+/*
+const httpLink = httpLink.create({ uri: url })
+const link = ApolloLink.from([
+  createAuthLink({ url, region, auth }),
+  createSubscriptionHandshakeLink(url, httpLink)
+]);
+*/
 //import { createSubscriptionHandshakeLink } from 'aws-appsync-subscription-link';
 
-const subscribechat = gql`subscription mysubscription {
+const subscribechat =
+`subscription MySubscription {
   oncallCreateMywebChat {
-    message
+    roomname
+    username
     timestamp
+    message
   }
-}
-`
-
+}`
 //atomの補完が古い?↓
 const createchat = gql`mutation createMywebChat($sessionid: ID!,$message: String!,$timestamp: String!)
 {
   createMywebChat(sessionid: $sessionid,message: $message,timestamp:$timestamp) {
+    roomname
+    username
     message
     timestamp
     }
   }
 `;
+
+const createuser = gql`mutation createMywebChat($sessionid: ID!,$message: String!,$timestamp: String!)
+{
+  createMywebChat(sessionid: $sessionid,message: $message,timestamp:$timestamp) {
+    roomname
+    username
+    message
+    timestamp
+    }
+  }
+`;
+
 
 const querychat = gql`
 query MyQuery ($sessionid: ID!){
@@ -45,6 +77,18 @@ query MyQuery ($sessionid: ID!){
   }
 }
 `
+
+const querychat2 =`
+query MyQuery ($sessionid: ID!){
+  getChatHistory(sessionid: $sessionid){
+    username
+    roomname
+    message
+    timestamp
+  }
+}
+`
+
 
 @Component({
   selector: 'app-chat',
@@ -103,50 +147,13 @@ export class ChatComponent implements OnInit {
       }
     }).subscribe((data:any)=>this.init_chat(data.data.getChatHistory[0],data.data.getChatHistory),(error:any)=>console.log("error",error))
 
-    this.apollo.subscribe({
+    /*this.apollo.subscribe({
       query:subscribechat,
-    }).subscribe((data:any)=>this.receive_message(data),(error:any)=>console.log("error",error))
+    }).subscribe((data:any)=>this.receive_message(data),(error:any)=>console.log("error",error))*/
 
-
-    this.gqlSocket = webSocket({
-     url: 'wss://mz2mvhqg7ze5zhbaxiy5g5anpu.appsync-realtime-api.ap-northeast-1.amazonaws.com/graphql',
-     protocol: 'graphql-ws',
-   })
-    //this.gqlSocket.subscribe(response=>console.log("response",response))
-
-    /*var ss = this.apollo.watchQuery<any>({
-      query:querychat,
-      variables: {
-        sessionid: this.cookie.get("sessionid")
-      }
-    }).valueChanges.subscribe().subscribe((data:any)=>this.receive_message(data),(error:any)=>console.log("error",error))*/
-    //this.subscchat.subscribe()
-    /*this.commentsQuery = this.apollo.watchQuery<any>({
-      query: subscribechat
-    })
-    this.commentsQuery.subscribeToMore({
-      document: subscribechat,
-      updateQuery: ()=>{
-        console.log("subsub")
-      }
-    })
-    */;
-    //this.chatSubscription.subscribeTomore
-  }
-  sub(){
-    this.gqlSocket.next({
-      payload: {
-        query: subscribechat
-      }
-    })
+    this.startchat()
   }
 
-  subscchat(){
-    console.log("サブスクライバ")
-    return this.apollo.subscribe({
-      query: subscribechat
-    })
-  }
 
   sendchat(sessionid:string,message:string,timestamp:string){
     this.apollo.mutate<any>({
@@ -157,12 +164,6 @@ export class ChatComponent implements OnInit {
         timestamp: timestamp
       },
     }).subscribe()
-    this.apollo.subscribe({
-      query:subscribechat
-    }).subscribe((data:any)=>this.receive_message(data),(error:any)=>console.log("error",error))
-    console.log("asdfsdfasdfasdffds",this.apollo.subscribe({
-      query:subscribechat
-    }).subscribe((data:any)=>this.receive_message(data),(error:any)=>console.log("error",error)).closed)
   }
 
   handleError<T>(operation = 'operation', result?: T) {
@@ -226,7 +227,6 @@ export class ChatComponent implements OnInit {
       console.log("send",this.message)
       return this.ws.send(this.message)
     }//https://bugsdb.com/_ja/debug/19204bfe6dfe10f00bd2c0ae346f666f
-
   */
   return ""}
 
@@ -238,28 +238,48 @@ export class ChatComponent implements OnInit {
     return this.http.post("/chat", requestdata, { responseType: 'text' }).pipe(catchError(this.handleError))
   }
 
-  startchat(roomname:string) {
+  startchat() {
 
-    //var tmpport = 12345
+    var encode_apikey =btoa(JSON.stringify({"host":"mz2mvhqg7ze5zhbaxiy5g5anpu.appsync-api.ap-northeast-1.amazonaws.com","x-api-key":"da2-puirc5dyvrhzjljjhcdyglhvya"}))
+    var encode_json = btoa(JSON.stringify({}))
+    var url = `wss://mz2mvhqg7ze5zhbaxiy5g5anpu.appsync-realtime-api.ap-northeast-1.amazonaws.com/graphql?header=${encode_apikey}&payload=${encode_json}`
+    this.gqlSocket = webSocket({
+     url: url,
+     protocol: 'graphql-ws',
+     //header:"",
+     //openObserver:{next:()=>this.gqlSocket.next({"header":{"x-api-key":"da2-puirc5dyvrhzjljjhcdyglhvya"},"type": "connection_init", "payload": {} })}
+   })
+   this.gqlSocket.filter(data=>data.type=="data").subscribe(message=>this.receive_message(message.payload.data))
+   //this.gqlSocket.subscribe(data=>console.log("来た",data))
+   this.gqlSocket.next({"header":{"x-api-key":"da2-puirc5dyvrhzjljjhcdyglhvya"},"type": "connection_init", "payload": {} })
 
-    //this.ws = new WebSocket(`ws://localhost:${tmpport}`);//this.chatarray.push([msg.message,msg.time,msg.username])
-    //this.createObservableSocket().subscribe((message :any) => this.receive_message(message))
-
-    //this.sendchat()
+   this.gqlSocket.next({
+    "id": "1234",
+    "payload": {
+      "data": JSON.stringify({"query": subscribechat}),
+      "extensions": {
+        "authorization": {
+          "host": "mz2mvhqg7ze5zhbaxiy5g5anpu.appsync-api.ap-northeast-1.amazonaws.com",
+          "x-api-key":"da2-puirc5dyvrhzjljjhcdyglhvya"
+         }
+      }
+    },
+    "type": "start"
+  })
   }
 
   receive_message(message:any){
-    console.log("メッセージ",message)
-    if(message.username!=this.username){
-      var date = new Date(message.timestamp)
+    var newmessage = message.oncallCreateMywebChat
+    console.log("新着",newmessage)
+    if(newmessage.username!=this.username){
+      var date = new Date(newmessage.timestamp)
       var time = this.lender_time(date)
-      this.chatarray.push([message.username,message.message,time])
+      this.chatarray.push([newmessage.username,newmessage.message,time])
     }
   }
 
   connectchat(data: any, request_type: string) {
     //request_type = create or connect
-    console.log("clicked",data.password,data.roomname)
     var formstatus = this.formcheck(data.roomname,data.password,request_type)
 
     if(formstatus=="OK"){
@@ -272,11 +292,12 @@ export class ChatComponent implements OnInit {
 
         case "connect":
             this.roomrequest(data.roomname, data.password, request_type).subscribe(response => {
-            if (response == "roomを作成してください"){
-              alert(response)
+            var result =JSON.parse(response).message
+            if ( result == "roomを作成してください"){
+              alert(result)
             }else{
               this.connectstatus = true
-              this.init_chat(data,response)
+              this.init_chat(data,result)
               }
             })
         }
@@ -313,22 +334,16 @@ export class ChatComponent implements OnInit {
       }
     }
 
-  init_chat(data:any,response:any){
+  init_chat(data:any,response:[]){
     try {
-      //var roomname=;
       this.roomname = data.roomname
       this.chatarray = this.lender_chat(response)
       this.connectstatus = true
-      //スクロール
+      this.scroll()
     }
     catch{
       console.log("初めて")
     }
-    /*console.log("data",data)
-    this.roomname = data.roomname
-    this.chatarray = this.lender_chat(response)
-    this.connectstatus = true*/
-    //this.startchat(roomname)
   }
 
   lender_chat(messages:[]) {
@@ -368,7 +383,6 @@ export class ChatComponent implements OnInit {
   }
 
   ngAfterViewInit(){
-    this.scroll()
   }
   ngAfterViewChecked(){
   }

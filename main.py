@@ -65,6 +65,7 @@ def hash_function(string):
     for _ in range(5000):
         hash = hashlib.sha256(hash.encode()).hexdigest()
     return hash
+print(len(hash_function("poke")))
 
 def make_session_id(length):
     return ''.join([random.choice(string.ascii_letters + string.digits) for i in range(length)])
@@ -257,54 +258,46 @@ def getid():
         else:
             logincheck="ログイン失敗"
             chat_messages = "まだルームがありません"
+            result = "roomを作成してください"
 
-        if chat_messages=="まだルームがありません":
-            return "roomを作成してください"
-        else:
-            sessionid_1 = '"{}"'.format(client_sessionid)
-            #roomnameの項目を追加
-            try:
-                table.update_item(
-                        Key={"sessionid":client_sessionid},
-                        UpdateExpression="set roomname = :tmp",
-                        ExpressionAttributeValues={
-                            ':tmp': roomname.replace('"',"")
-                        })
+        sessionid_1 = '"{}"'.format(client_sessionid)
+        #roomnameの項目を追加
+        try:
+            table.update_item(
+                    Key={"sessionid":client_sessionid},
+                    UpdateExpression="set roomname = :tmp",
+                    ExpressionAttributeValues={
+                        ':tmp': roomname.replace('"',"")
+                    })
 
-            except Exception as e:
-                print(e)
-                return e
+        except Exception as e:
+            print(e)
+            result = e
 
-            query = gql(
-                """
-                query getChatHistory {
-                  getChatHistory(sessionid:""" + sessionid_1 + """) {
-                    username
-                    message
-                    timestamp
-                  }
-                }
+        query = gql(
             """
-            )
+            query getChatHistory {
+              getChatHistory(sessionid:""" + sessionid_1 + """) {
+                username
+                message
+                timestamp
+              }
+            }
+        """
+        )
 
-            # Execute the query on the transport
+        try:
             result = client.execute(query)["getChatHistory"]
-            #print(result)
-            response = {}
-            print("いままでの",result)
-            #response["message"] = chat_messages
-            #print("result")
-            #response["message"] = [result[:]["message"],result[:]["username"],result[:]["timestamp"]]
-            response["message"] = result
-            response["username"] = server_username
+        except Exception as e:
+            result = e
 
-            response_json = json.dumps(response)
-            #response = make_response(response_json)
+        response = {}
+        response["message"] = result
+        #response["username"] = server_username
 
+        response_json = json.dumps(response)
 
-
-            #print(response_json)
-            return response_json
+        return response_json
 
 
 if __name__ == '__main__':
