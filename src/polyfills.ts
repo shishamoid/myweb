@@ -56,7 +56,10 @@
  * Zone JS is required by default for Angular itself.
  */
 import 'zone.js/dist/zone';  // Included with Angular CLI.
-
+//追記
+// "Buffer is not defined"の対応
+(window as any).global = window;
+global.Buffer = global.Buffer || require('buffer').Buffer
 
 /***************************************************************************************************
  * APPLICATION IMPORTS
