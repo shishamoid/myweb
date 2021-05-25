@@ -68,7 +68,7 @@
         <span class="person">{{message[0]}}</span> <span class="message"><font size="4">{{message[1]}}</font></span> <span class="time"><font size="2">{{message[2]}}</font></span>
       </div>
       </div>
-      <div id="lastchat">testa</div>
+      <div id="lastchat"></div>
 
     </div>
     <form [formGroup] = "chatform" (ngSubmit)= "sendmessage(chatform.value)" *ngIf="connectstatus" class="send_form"  fxLayout="row">
