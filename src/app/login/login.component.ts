@@ -2,8 +2,25 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient} from '@angular/common/http';
-import { catchError} from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
+import {gql,Apollo} from 'apollo-angular';
+import { CookieService } from 'ngx-cookie-service';
+
+const authuser = gql(
+  `query MyQuery($username:ID!,$password:String!,$cookie:String!) {
+  getuser(password: $password, username: $username, cookie: $cookie) {
+    result
+    }
+  }
+`)
+
+const createuser = gql(
+  `mutation MyMutation($username:ID!,$password:String!){
+  createuser(password: $password, username: $username) {
+    password
+    }
+  }`
+)
 
 @Component({
   selector: 'app-login',
@@ -21,12 +38,16 @@ export class LoginComponent implements OnInit {
     http : HttpClient;
     response: string;
     logincheck: string;
-    createuser:any;
     requesttype:string='connect';
     how_to_use:boolean= false;
+    apollo: Apollo
+    cookie:CookieService
 
-     constructor(router :Router, http : HttpClient
-      ) {
+
+     constructor(router :Router, http : HttpClient,apollo:Apollo,cookie:CookieService)
+     {
+       this.apollo = apollo,
+       this.cookie = cookie,
        this.router = router,
        this.http = http,
        this.loginform = new FormGroup({
@@ -49,12 +70,31 @@ export class LoginComponent implements OnInit {
     };
   }
 
-   http_request(newusername : string,newpassword:string,type:string){
-     var requestdata = JSON.stringify({"request_type": type,"username": newusername,"password": newpassword})
-    return this.http.post("/login",requestdata,{responseType: "text"}).pipe(catchError(this.handleError))
+   http_request(newusername : String,newpassword:String,type:String){
+     if(type=="connect"){
+       return this.apollo.query<any>({
+         query: authuser,
+         variables: {
+           username:newusername,
+           password:newpassword
+        },
+       })
+     }
+     else if(type=="create"){
+       return this.apollo.mutate<any>({
+         mutation: createuser,
+         variables: {
+           username:newusername,
+           password:newpassword
+        },
+       })
+     }
+     else{
+       return "TypeError"
+     }
    }
 
-   check_login(response_message : string,username:string){
+   check_login(response_message :any,username:String){
      console.log(response_message)
      if(response_message=="ログイン成功"){
        this.router.navigate(["/chat"],{queryParams:{username : `${username}`}})
@@ -65,7 +105,7 @@ export class LoginComponent implements OnInit {
      }
    }
 
-   create_check(response_message:string){
+   create_check(response_message:String){
      if(response_message == "ユーザーが作成されました"){
        alert("新規ユーザが作成されました。\nログインしてください！")
      }else if(response_message=="ユーザーがすでにいます"){
@@ -75,7 +115,7 @@ export class LoginComponent implements OnInit {
      }
    }
 
-   formcheck(username:string,password:string){
+   formcheck(username:String,password:String){
      if(username==""){
        return "名前を入力してください"
      }
@@ -92,7 +132,7 @@ export class LoginComponent implements OnInit {
        return "パスワードが短すぎます"
      }
      else if(password.match(/[/^\W+$]/)){ //半角英数+全角英数+アンダーバー
-       return "英数字とアンダーバーのみ使用可能です"
+       return "パスワードは英数字とアンダーバーのみ使用可能です"
      }
      else{
        return "OK"
@@ -101,8 +141,30 @@ export class LoginComponent implements OnInit {
 
    create_or_login(data:logininfo){
       var formstatus = this.formcheck(data.username,data.password)
+      var username = data.username
+      var password = data.password
+      var requesttype = this.requesttype
       if(formstatus=="OK"){
-        this.http_request(data.username,data.password,this.requesttype).subscribe(response => {this.check_login(JSON.parse(response).message,data.username)})
+        if(requesttype=="connect"){
+          this.apollo.query<any>({
+            query: authuser,
+            variables: {
+              username:username,
+              password:password,
+              cookie:this.cookie.get("sessionid")
+           },
+         }).subscribe(response => {this.router.navigate(["/chat"],{queryParams:{username : `${username}`}})},error => {console.log(error),alert("名前かパスワードが違います")})
+        }
+        else if(requesttype=="create"){
+          this.apollo.mutate<any>({
+            mutation: createuser,
+            variables: {
+              username:username,
+              password:password
+           }
+         }).subscribe(response => {alert("作成できました")},error => {console.log(error),alert("作成できませんでした")})
+        }
+        //this.http_request(data.username,data.password,this.requesttype)
       }else{
         alert(formstatus)
     }

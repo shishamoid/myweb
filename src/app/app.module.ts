@@ -51,7 +51,8 @@ import { CookieService } from 'ngx-cookie-service';
     CommonModule,
     MatCheckboxModule,
     MatRippleModule,
-    GraphQLModule
+    GraphQLModule,
+    //CookieService
     //RouterModule.forRoot(myRoutes,{useHash:true})
   ],
   providers: [CookieService],

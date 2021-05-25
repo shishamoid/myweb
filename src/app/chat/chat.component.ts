@@ -1,84 +1,65 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, ParamMap } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Observable} from 'rxjs/Rx';
 //import {Md5} from 'ts-md5/dist/md5';
 import { WebSocketSubject,webSocket } from 'rxjs/webSocket';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient} from '@angular/common/http';
 import { of } from 'rxjs';
-import { catchError, map, tap, retry } from 'rxjs/operators';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Apollo, QueryRef,gql,Mutation} from 'apollo-angular';
+import { QueryRef,gql,Mutation} from 'apollo-angular';
 import { CookieService } from 'ngx-cookie-service';
-//import { Subscription } from 'rxjs/Subscription';
-import {GraphQLModule} from '../graphql.module';
-
-//import gql from 'graphql-tag'
-import {AfterViewInit, ElementRef, ViewChild} from '@angular/core';
-//import {API,  graphqlOperation } from '@aws-amplify/api'
-import {WebSocketLink} from '@apollo/client/link/ws';
-import { createSubscriptionHandshakeLink } from 'aws-appsync-subscription-link';
-
-import {split,ApolloClientOptions, InMemoryCache,ApolloLink, ApolloClient} from '@apollo/client/core';
-import {HttpLink} from 'apollo-angular/http';
-import { SubscriptionClient } from 'subscriptions-transport-ws';
-
-
 import { setContext } from '@apollo/client/link/context';
-/*
-const httpLink = httpLink.create({ uri: url })
-const link = ApolloLink.from([
-  createAuthLink({ url, region, auth }),
-  createSubscriptionHandshakeLink(url, httpLink)
-]);
-*/
-//import { createSubscriptionHandshakeLink } from 'aws-appsync-subscription-link';
+import {split,ApolloClientOptions, InMemoryCache,ApolloLink, ApolloClient} from '@apollo/client/core';
+import {HttpHeaders} from '@angular/common/http';
+import {Apollo,APOLLO_OPTIONS} from 'apollo-angular';
+//import {HttpLink} from 'apollo-link/http';
 
 const subscribechat =
-`subscription MySubscription {
-  oncallCreateMywebChat {
-    roomname
-    username
-    timestamp
-    message
+`subscription MySubscription($roomname: String!) {
+  oncallCreateMywebChat(roomname: $roomname) {
+      result {
+        message
+        roomname
+        timestamp
+        username
+      }
+      roomname
   }
 }`
+
+const authroom = gql(
+  `query MyQuery($roomname:ID!,$password:String!,$cookie:String!) {
+  getroom(password: $password, roomname: $roomname, cookie: $cookie) {
+    result
+  }
+}
+`)
+
 //atomの補完が古い?↓
 const createchat = gql`mutation createMywebChat($sessionid: ID!,$message: String!,$timestamp: String!)
 {
   createMywebChat(sessionid: $sessionid,message: $message,timestamp:$timestamp) {
-    roomname
-    username
-    message
-    timestamp
+    result {
+      message
+      roomname
+      timestamp
+      username
+    }
+      roomname
     }
   }
 `;
 
-const createuser = gql`mutation createMywebChat($sessionid: ID!,$message: String!,$timestamp: String!)
+const createroom = gql`mutation createroom($roomname: ID!,$password: String!)
 {
-  createMywebChat(sessionid: $sessionid,message: $message,timestamp:$timestamp) {
-    roomname
-    username
-    message
-    timestamp
+  createroom(roomname: $roomname,password: $password) {
+    password
     }
   }
 `;
-
 
 const querychat = gql`
-query MyQuery ($sessionid: ID!){
-  getChatHistory(sessionid: $sessionid){
-    username
-    roomname
-    message
-    timestamp
-  }
-}
-`
-
-const querychat2 =`
 query MyQuery ($sessionid: ID!){
   getChatHistory(sessionid: $sessionid){
     username
@@ -100,7 +81,6 @@ export class ChatComponent implements OnInit {
   roomname: string;
   username: string;
   subject: WebSocketSubject<MessageEvent>
-  //@ViewChild("test") test: ElementRef
   response: string;
   roomnameform: FormGroup;
   chatform: FormGroup;
@@ -147,15 +127,13 @@ export class ChatComponent implements OnInit {
       }
     }).subscribe((data:any)=>this.init_chat(data.data.getChatHistory[0],data.data.getChatHistory),(error:any)=>console.log("error",error))
 
-    /*this.apollo.subscribe({
-      query:subscribechat,
-    }).subscribe((data:any)=>this.receive_message(data),(error:any)=>console.log("error",error))*/
-
-    this.startchat()
   }
 
-
   sendchat(sessionid:string,message:string,timestamp:string){
+    var header = new HttpHeaders().set('sessionid2', sessionid)
+    header = header.set("sessionid",sessionid)
+    header = header.set("x-api-key","da2-puirc5dyvrhzjljjhcdyglhvya")
+
     this.apollo.mutate<any>({
       mutation: createchat,
       variables: {
@@ -163,7 +141,10 @@ export class ChatComponent implements OnInit {
         message: message,
         timestamp: timestamp
       },
-    }).subscribe()
+      context:{
+        "headers":header,
+      },
+    }).subscribe(data=>console.log("result",data))
   }
 
   handleError<T>(operation = 'operation', result?: T) {
@@ -172,18 +153,6 @@ export class ChatComponent implements OnInit {
       console.log(`${operation} failed: ${error.message}`);
       return of(result as T);
     };
-  }
-
-  createObservableSocket() {
-    return new Observable(observer => {
-      this.ws.onmessage = (e) => {
-        var object:[] = JSON.parse(e.data)
-        observer.next(object)
-      }
-      this.ws.onerror = (event) => observer.error(event)
-      this.ws.onclose = () => observer.complete()
-    }
-    );
   }
 
   split_message(message:string){
@@ -220,26 +189,10 @@ export class ChatComponent implements OnInit {
     this.chatarray[last_index][1] = data.chatmessage
     this.chatarray[last_index][2] = this.lender_time(date)
     this.sendchat(this.cookie.get("sessionid"),data.chatmessage,time)
-    /*if (this.ws.readyState === WebSocket.OPEN) {
-      //roomunum調整する必要あり
-      var moji = `{"username": "${this.username}","roomname": "${this.roomname}","message": "${data.chatmessage}","time": "${time}"}`
-      this.message = JSON.stringify(JSON.parse(moji))
-      console.log("send",this.message)
-      return this.ws.send(this.message)
-    }//https://bugsdb.com/_ja/debug/19204bfe6dfe10f00bd2c0ae346f666f
-  */
-  return ""}
+  return ""
+}
 
-  roomrequest(roomname: string, password: string, request_type: string) {
-    //websocket接続要求
-    console.log(roomname, password, request_type,this.username)
-    var requestdata = JSON.stringify({ "request_type": request_type, "password": password, "roomname": roomname})
-    console.log("this is request", requestdata)
-    return this.http.post("/chat", requestdata, { responseType: 'text' }).pipe(catchError(this.handleError))
-  }
-
-  startchat() {
-
+  startchat(roomname:String) {
     var encode_apikey =btoa(JSON.stringify({"host":"mz2mvhqg7ze5zhbaxiy5g5anpu.appsync-api.ap-northeast-1.amazonaws.com","x-api-key":"da2-puirc5dyvrhzjljjhcdyglhvya"}))
     var encode_json = btoa(JSON.stringify({}))
     var url = `wss://mz2mvhqg7ze5zhbaxiy5g5anpu.appsync-realtime-api.ap-northeast-1.amazonaws.com/graphql?header=${encode_apikey}&payload=${encode_json}`
@@ -249,19 +202,22 @@ export class ChatComponent implements OnInit {
      //header:"",
      //openObserver:{next:()=>this.gqlSocket.next({"header":{"x-api-key":"da2-puirc5dyvrhzjljjhcdyglhvya"},"type": "connection_init", "payload": {} })}
    })
-   this.gqlSocket.filter(data=>data.type=="data").subscribe(message=>this.receive_message(message.payload.data))
-   //this.gqlSocket.subscribe(data=>console.log("来た",data))
+   this.gqlSocket.subscribe(message=>this.receive_message(message))
    this.gqlSocket.next({"header":{"x-api-key":"da2-puirc5dyvrhzjljjhcdyglhvya"},"type": "connection_init", "payload": {} })
-
+   console.log("roomname",roomname)
    this.gqlSocket.next({
     "id": "1234",
     "payload": {
-      "data": JSON.stringify({"query": subscribechat}),
+      "data": JSON.stringify({"query": subscribechat,"variables":{"roomname":roomname}}),
       "extensions": {
         "authorization": {
           "host": "mz2mvhqg7ze5zhbaxiy5g5anpu.appsync-api.ap-northeast-1.amazonaws.com",
-          "x-api-key":"da2-puirc5dyvrhzjljjhcdyglhvya"
-         }
+          "x-api-key":"da2-puirc5dyvrhzjljjhcdyglhvya",
+          "sessionid":this.cookie.get("sessionid"),
+        },
+        "headers":{
+          "roomname":roomname
+        }
       }
     },
     "type": "start"
@@ -269,49 +225,78 @@ export class ChatComponent implements OnInit {
   }
 
   receive_message(message:any){
-    var newmessage = message.oncallCreateMywebChat
-    console.log("新着",newmessage)
-    if(newmessage.username!=this.username){
-      var date = new Date(newmessage.timestamp)
-      var time = this.lender_time(date)
-      this.chatarray.push([newmessage.username,newmessage.message,time])
+    console.log("メッセージ",message)
+    if(message.type=="data"){
+      console.log("新着",newmessage)
+      var newmessage = message.payload.data.oncallCreateMywebChat.result
+      if(newmessage.username!=this.username){
+        var date = new Date(newmessage.timestamp)
+        var time = this.lender_time(date)
+        this.chatarray.push([newmessage.username,newmessage.message,time])
+      }
     }
+
   }
+
 
   connectchat(data: any, request_type: string) {
     //request_type = create or connect
     var formstatus = this.formcheck(data.roomname,data.password,request_type)
+    var roomname = data.roomname
+    var password = data.password
 
     if(formstatus=="OK"){
       switch(request_type){
         case "create":
-          this.roomrequest(data.roomname, data.password, request_type).subscribe(response => {
-            alert(response) //roomの作成に成功しました or roomの作成に失敗しました
-          })
+        this.apollo.mutate<any>({
+            mutation: createroom,
+            variables: {
+              roomname:roomname,
+              password:password
+            },
+          }).subscribe(response => {
+            alert("roomが作成されました") //roomの作成に成功しました or roomの作成に失敗しました
+          },error => {alert("roomの作成に失敗しました"),console.log("error",error)})
           break
 
         case "connect":
-            this.roomrequest(data.roomname, data.password, request_type).subscribe(response => {
-            var result =JSON.parse(response).message
-            if ( result == "roomを作成してください"){
-              alert(result)
-            }else{
-              this.connectstatus = true
-              this.init_chat(data,result)
+        console.log("authroom",roomname,password)
+        this.apollo.query<any>({
+            query: authroom,
+            variables: {
+              cookie:this.cookie.get("sessionid"),
+              roomname:roomname,
+              password:password
+            },
+          }).subscribe(response => {
+            this.apollo.subscribe({
+              query:querychat,
+              variables:{
+                sessionid:this.cookie.get("sessionid")
               }
-            })
+            }).subscribe((data:any)=>{
+              //this.init_chat(data.data.getChatHistory[0],data.data.getChatHistory),
+              console.log("pokemon",data)
+              console.log("pokemon2",data.data.getChatHistory)
+              this.roomname = roomname,
+              this.chatarray = this.lender_chat(data.data.getChatHistory),
+              this.connectstatus = true,
+              this.startchat(roomname)}
+              ,(error:any)=>console.log("error",error))
+          },error => {alert("roomの認証に失敗しました"),console.log("error",error)})
+
         }
       }
     else{
       alert(formstatus)
     }
-    }
+  }
 
     formcheck(roomname:string,password:string,request_type:string){
       if(this.roomname==roomname){
         return "接続中です"
       }
-      else if(roomname==""){
+      if(roomname==""){
         return "グループ名を入力してください"
       }
       else if(password==""){
@@ -335,11 +320,15 @@ export class ChatComponent implements OnInit {
     }
 
   init_chat(data:any,response:[]){
+    console.log("dataです",data)
+    //console.log("response",response)
+
     try {
       this.roomname = data.roomname
       this.chatarray = this.lender_chat(response)
       this.connectstatus = true
-      this.scroll()
+      this.startchat(this.roomname)
+      //this.scroll()
     }
     catch{
       console.log("初めて")

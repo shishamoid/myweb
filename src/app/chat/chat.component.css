@@ -1,5 +1,5 @@
 .chatmessages_flame {
-  min-height: 25%;
+  min-height: 250px;
   max-height: 300px;
   overflow-y: scroll;
   background-image: url("../../assets/img/line_chat.png");
