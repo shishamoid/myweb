@@ -5,8 +5,9 @@
     <p>1. 適当な名前とidを作成します。 名前、パスワードどちらかを忘れたらもう一回作ってください。</p>
     <p>2. 作成した名前とパスワードでログインします。</p>
     <p>3. グループを作ります。グループ名とパスワードを覚えておきます。</p>
-    <p>4. 話したい人で、グループ名とパスワードを共有し、ログインします。</p>
-    <p>5. 同じグループにログインしていると、リアルタイムでチャットができます。</p>
+    <p>4. 話したい人で、グループ名とパスワードを共有し、入室します。</p>
+    <p>5. 同じグループに入室していると、リアルタイムでチャットができます。</p>
+    <p>※DBserver起動に時間が30秒ほどかかる場合があります。</p>
 </div>
 
 
@@ -37,7 +38,7 @@
 
 <div fxLayout="row">
 <mat-form-field fxFlex="100%">
-<mat-label>パスワード(6~20文字)</mat-label>
+<mat-label>パスワード(半角英数字6~20文字)</mat-label>
 <input matInput type="password" formControlName="password">
 <button mat-button *ngIf="password" matSuffix mat-icon-button aria-label="Clear" >
   <mat-icon>close</mat-icon>
