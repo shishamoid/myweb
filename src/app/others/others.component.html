@@ -1,0 +1,95 @@
+<mat-expansion-panel (opened)="panelOpenState = true"
+                       (closed)="panelOpenState = false">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        このアプリについて
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-expansion-panel (opened)="panelOpenState1 = true"
+                           (closed)="panelOpenState1 = false">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            アーキテクチャ
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <img class="architecture" src="../../assets/img/archi.png">
+      </mat-expansion-panel>
+
+      <mat-expansion-panel (opened)="panelOpenState2 = true"
+                             (closed)="panelOpenState2 = false">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              作ってみて
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+            <h3>
+               作るとき意識したこと
+            </h3>
+            <h4>
+              とにかくいろいろやってみること
+              </h4>
+              <p>
+                いろいろな技術を知ることができたのでよかった<br>
+              </p>
+              <h3>
+                気をつけたほうが良かったこと
+              </h3>
+                <p>
+                   仕様変更を繰り返した影響で、開発に時間がかかったこと 最初の方に書いたコードは今ほぼ削除していて、あまり意味はなかった
+                </p>
+        </mat-expansion-panel>
+  </mat-expansion-panel>
+  <mat-expansion-panel (opened)="panelOpenState3 = true"
+                         (closed)="panelOpenState3 = false">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          授業まとめ
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <mat-expansion-panel (opened)="panelOpenState4 = true"
+                             (closed)="panelOpenState4 = false">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              研究室
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          制作中
+        </mat-expansion-panel>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel (opened)="panelOpenState5 = true"
+                           (closed)="panelOpenState5 = false">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            About me
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+            <mat-expansion-panel (opened)="panelOpenState6 = true"
+                                   (closed)="panelOpenState6 = false">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    プロフィール
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                2000年8/12生
+                早稲田大学基幹理工学部表現工学科３年<br>
+                尾形研究室(AI&Robotics)所属<br>
+                <br>
+                資格: 基本情報技術者、SAJスキー検定1級<br>
+                経歴<br>
+                2020/1 ~ 2021/1 クリスタルメソッド株式会社 プログラマとしてインターン<br>
+
+              </mat-expansion-panel>
+              <mat-expansion-panel (opened)="panelOpenState7 = true"
+                                     (closed)="panelOpenState7 = false">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>
+                      リンク集
+                    </mat-panel-title>
+                  </mat-expansion-panel-header>
+                  gmail: itodaisuke0812@gmail.com<br>
+                  github: <a href="https://github.com/shishamoid">https://github.com/shishamoid</a><br>
+                  linkedin: <a href="https://www.linkedin.com/in/daisuke-ito-31713a1bb">https://www.linkedin.com/in/daisuke-ito-31713a1bb</a><br>
+                </mat-expansion-panel>
+
+      </mat-expansion-panel>

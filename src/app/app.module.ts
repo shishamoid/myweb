@@ -25,6 +25,10 @@ import {MatRippleModule} from '@angular/material/core';
 import { StopwatchComponent } from './stopwatch/stopwatch.component';
 import { GraphQLModule } from './graphql.module'
 import { CookieService } from 'ngx-cookie-service';
+import { OthersComponent } from './others/others.component';
+
+import {MatExpansionModule} from '@angular/material/expansion';
+import {MatTreeModule} from '@angular/material/tree';
 
 @NgModule({
   declarations: [
@@ -33,6 +37,7 @@ import { CookieService } from 'ngx-cookie-service';
     ChatComponent,
     LoginComponent,
     StopwatchComponent,
+    OthersComponent,
     //NgxAutoScrollModule,
   ],
   imports: [
@@ -52,6 +57,8 @@ import { CookieService } from 'ngx-cookie-service';
     MatCheckboxModule,
     MatRippleModule,
     GraphQLModule,
+    MatExpansionModule,
+    MatTreeModule
     //CookieService
     //RouterModule.forRoot(myRoutes,{useHash:true})
   ],
