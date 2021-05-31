@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient} from '@angular/common/http';
+import { Observable, of } from 'rxjs';
 import {gql,Apollo} from 'apollo-angular';
 import { CookieService } from 'ngx-cookie-service';
 
@@ -56,6 +57,18 @@ export class LoginComponent implements OnInit {
       }
       ngOnInit(){
       }
+
+   handleError<T>(operation = 'operation', result?: T) {
+    return (error: any): Observable<T> => {
+
+      // TODO: リモート上のロギング基盤にエラーを送信する
+      console.error(error); // かわりにconsoleに出力
+
+      // TODO: ユーザーへの開示のためにエラーの変換処理を改善する
+      console.log(`${operation} failed: ${error.message}`);
+      return of(result as T);
+    };
+  }
 
    http_request(newusername : String,newpassword:String,type:String){
      if(type=="connect"){
