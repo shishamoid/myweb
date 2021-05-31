@@ -7,7 +7,7 @@ import { HttpClient} from '@angular/common/http';
 import { of } from 'rxjs';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
-import { QueryRef,gql} from 'apollo-angular';
+import { QueryRef,gql,Mutation} from 'apollo-angular';
 import { CookieService } from 'ngx-cookie-service';
 import { setContext } from '@apollo/client/link/context';
 import {split,ApolloClientOptions, InMemoryCache,ApolloLink, ApolloClient} from '@apollo/client/core';
@@ -69,6 +69,7 @@ query MyQuery ($sessionid: ID!){
   }
 }
 `
+
 
 @Component({
   selector: 'app-chat',
@@ -143,7 +144,15 @@ export class ChatComponent implements OnInit {
       context:{
         "headers":header,
       },
-    }).subscribe(data=>console.log("result",data),)
+    }).subscribe(data=>console.log("result",data))
+  }
+
+  handleError<T>(operation = 'operation', result?: T) {
+    return (error: any): Observable<T> => {
+      console.error(error);
+      console.log(`${operation} failed: ${error.message}`);
+      return of(result as T);
+    };
   }
 
   split_message(message:string){
@@ -190,9 +199,12 @@ export class ChatComponent implements OnInit {
     this.gqlSocket = webSocket({
      url: url,
      protocol: 'graphql-ws',
+     //header:"",
+     //openObserver:{next:()=>this.gqlSocket.next({"header":{"x-api-key":"da2-puirc5dyvrhzjljjhcdyglhvya"},"type": "connection_init", "payload": {} })}
    })
    this.gqlSocket.subscribe(message=>this.receive_message(message))
    this.gqlSocket.next({"header":{"x-api-key":"da2-puirc5dyvrhzjljjhcdyglhvya"},"type": "connection_init", "payload": {} })
+   console.log("roomname",roomname)
    this.gqlSocket.next({
     "id": "1234",
     "payload": {
@@ -213,7 +225,9 @@ export class ChatComponent implements OnInit {
   }
 
   receive_message(message:any){
+    console.log("メッセージ",message)
     if(message.type=="data"){
+      console.log("新着",newmessage)
       var newmessage = message.payload.data.oncallCreateMywebChat.result
       if(newmessage.username!=this.username){
         var date = new Date(newmessage.timestamp)
@@ -246,6 +260,7 @@ export class ChatComponent implements OnInit {
           break
 
         case "connect":
+        console.log("authroom",roomname,password)
         this.apollo.query<any>({
             query: authroom,
             variables: {
@@ -260,6 +275,9 @@ export class ChatComponent implements OnInit {
                 sessionid:this.cookie.get("sessionid")
               }
             }).subscribe((data:any)=>{
+              //this.init_chat(data.data.getChatHistory[0],data.data.getChatHistory),
+              console.log("pokemon",data)
+              console.log("pokemon2",data.data.getChatHistory)
               this.roomname = roomname,
               this.chatarray = this.lender_chat(data.data.getChatHistory),
               this.connectstatus = true,
@@ -302,6 +320,8 @@ export class ChatComponent implements OnInit {
     }
 
   init_chat(data:any,response:[]){
+    console.log("dataです",data)
+    //console.log("response",response)
 
     try {
       this.roomname = data.roomname
@@ -311,7 +331,7 @@ export class ChatComponent implements OnInit {
       //this.scroll()
     }
     catch{
-      ;
+      console.log("初めて")
     }
   }
 
@@ -343,10 +363,12 @@ export class ChatComponent implements OnInit {
   scroll(){
     let target  = document.getElementById("lastchat")
     //let target = this.lastchat;
+    console.log("target",target)
     if(target){
       target.scrollTop = target.scrollHeight;
       //target.scrollIntoView(false)
     }
+    console.log("Kk")
   }
 
   ngAfterViewInit(){

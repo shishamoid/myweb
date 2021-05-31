@@ -75,10 +75,7 @@ export class StopwatchComponent implements OnInit {
   ngOnInit(): void {
     this.nowtimebyid = <HTMLElement>document.getElementById("nowtime")
     this.laptimebyid = <HTMLElement>document.getElementById("laptime")
-    //console.log("laptimebyid",this.laptimebyid)
-  }
-  ngOnDestroy(){
-    this.stopTime()
+    console.log("laptimebyid",this.laptimebyid)
   }
 
 }

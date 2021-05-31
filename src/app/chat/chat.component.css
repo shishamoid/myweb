@@ -40,8 +40,8 @@
   border: solid;
   border-color: black;
   text-align: center;
-  width: 80%;
-  margin: auto;
+  margin: 0 0 0 auto;
+
 }
  .send_form{
    width: 100%;
