@@ -2,7 +2,7 @@
     "dev": {
         "app_function": "main.app",
         "aws_region": "ap-northeast-1",
-        "exclude" : ["node_modules","__pycache__","e2e","deactivate",".git","*.zip"],
+        "exclude" : ["node_modules","__pycache__","e2e","deactivate",".git","*.zip","*.md"],
         "profile_name": "default",
         "project_name": "mywebsite",
         "runtime": "python3.6",
