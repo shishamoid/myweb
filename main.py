@@ -5,7 +5,7 @@ from flask_cors import CORS
 import json
 import hashlib
 import logging
-# ログレベルを DEBUG に変更
+
 logging.basicConfig(level=logging.INFO)
 import random, string
 
