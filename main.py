@@ -14,13 +14,6 @@ app.config['JSON_AS_ASCII'] = False
 app.config['SECRET_KEY'] = 'secret!secret!'
 CORS(app)
 
-def hash_function(string):
-    encode_string = string.encode()
-    hash = hashlib.sha256(encode_string).hexdigest()
-    for _ in range(5000):
-        hash = hashlib.sha256(hash.encode()).hexdigest()
-    return hash
-
 def make_session_id(length):
     return ''.join([random.choice(string.ascii_letters + string.digits) for i in range(length)])
 
@@ -48,7 +41,6 @@ def form_check(username,password,request_type):
 
 @app.route('/', methods=['GET'])
 def getAngular():
-    print("accessed!")
     sessionid = make_session_id(99)
     response = make_response(render_template("./index.html"))
     response.set_cookie("sessionid",value=sessionid)
