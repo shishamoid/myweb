@@ -43,7 +43,7 @@ def form_check(username,password,request_type):
 def getAngular():
     sessionid = make_session_id(99)
     response = make_response(render_template("./index.html"))
-    response.set_cookie("sessionid",value=sessionid)
+    response.set_cookie("sessionid",value=sessionid,secure=True)
     return response
 
 @app.route("/login",methods=["GET"])

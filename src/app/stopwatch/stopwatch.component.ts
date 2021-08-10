@@ -58,7 +58,12 @@ export class StopwatchComponent implements OnInit {
 
    //レンダリング
    lenderTime(starttime :number){
-      this.nowtime.innerHTML=((Date.now()-starttime)/1000).toFixed(2);
+      var lendertime = ((Date.now()-starttime)/1000);
+      var lendertime_s = lendertime.toFixed(2);
+      if(lendertime>=99999){
+          this.resetTime() 
+      }
+      this.nowtime.innerHTML= lendertime_s;
    }
 
    //ラップ関数
