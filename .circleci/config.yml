@@ -40,12 +40,11 @@ jobs:
             pyenv virtualenv 3.6.14 website
             pyenv activate website
             pip install -r requirements.txt
-            echo "pip finish"
             sudo apt update
             sudo apt install nodejs
             sudo apt install npm
-            npm install -g @angular/cli
-            ng build --prod
+            sudo npm install -g @angular/cli
+            sudo ng build --prod
             python main.py
       - run:
           name: パッケージ作成
