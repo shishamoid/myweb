@@ -43,7 +43,7 @@ jobs:
             sudo apt update
             sudo apt install nodejs
             sudo apt install npm
-            sudo npm install -g @angular/cli -y
+            echo yes | sudo npm install -g @angular/cli
             sudo ng build --prod
             python main.py
       - run:
