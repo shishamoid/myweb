@@ -33,7 +33,7 @@ tqdm==4.61.0
 troposphere==2.7.1
 typing-extensions==3.10.0.0
 urllib3==1.26.5
-Werkzeug==2.0.0
+Werkzeug==0.16.1
 wsgi-request-logger==0.4.6
 zappa==0.52.0
 zipp==3.4.1
