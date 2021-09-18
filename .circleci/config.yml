@@ -38,22 +38,22 @@ jobs:
           name: 環境構築 + テスト
           # This assumes pytest is installed via the install-package step above
           command: |
-          echo "環境構築 + テスト"
-          pip install -r requirements.txt
-          ng build --prod
-          python main.py
+            echo "環境構築 + テスト"
+            pip install -r requirements.txt
+            ng build --prod
+            python main.py
       - run:
           name: パッケージ作成
           command: |
-          echo "デプロイパッケージ作成"
-          zappa package -o myweb_handler.zip
+            echo "デプロイパッケージ作成"
+            zappa package -o myweb_handler.zip
       
       - run:
           name: デプロイ
           command: |
-          echo "aws認証 + アップロード"
-          export aws_access_key_id=$aws_access_key_id
-          export aws_secret_access_key=$aws_secret_access_key
-          export region=$region
-          export output=$output
-          aws lambda update-function-code --function-name mywebsite-dev --zip-file fileb://myweb_handler.zip
+            echo "aws認証 + アップロード"
+            export aws_access_key_id=$aws_access_key_id
+            export aws_secret_access_key=$aws_secret_access_key
+            export region=$region
+            export output=$output
+            aws lambda update-function-code --function-name mywebsite-dev --zip-file fileb://myweb_handler.zip
