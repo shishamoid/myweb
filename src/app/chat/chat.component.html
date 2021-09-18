@@ -6,7 +6,7 @@
 </head>
 
 <div class="container" fxLayout="column" fxLayoutAlign="center">
-  <mat-checkbox [(ngModel)]="how_to_use">使い方を見る</mat-checkbox>
+  <mat-checkbox [(ngModel)]="how_to_use">デモ動画&使い方を見る</mat-checkbox>
   <div *ngIf="how_to_use" class="how_to_use">
     <p>
       1. 適当な名前とidを作成します。 名前、パスワードどちらかを忘れたらもう一回作ってください。<br>
@@ -15,6 +15,7 @@
       4. 話したい人で、グループ名とパスワードを共有し、入室します。<br>
       5. 同じグループに入室していると、リアルタイムでチャットができます。<br>
     </p>
+    <iframe height="315" src="https://www.youtube.com/embed/gbU5O2gQ5eQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
   </div>
 
   <mat-radio-group name="requestform" [(ngModel)]="requesttype" [ngModelOptions]="{standalone: true}" fxLayout="row">
