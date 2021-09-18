@@ -50,3 +50,6 @@ zappa_setting.json
 myweb-*.tar.gz
 handler_myweb-dev*.zip
 awskeys.json
+
+#9/18 add
+myweb_handler.zip
