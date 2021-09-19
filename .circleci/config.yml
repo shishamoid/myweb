@@ -41,13 +41,9 @@ jobs:
             pyenv activate website
             pip install -r requirements.txt
             echo "pyenv finish"
-            curl -sL https://deb.nodesource.com/setup_14.x -o nodesource_setup.sh
-            sudo bash nodesource_setup.sh
-            sudo apt autoclean
-            sudo apt-get clean all
-            sudo apt update
-            echo "------------------------"
-            sudo apt install nodejs
+            echo "------------nodejs------------"
+            curl -fsSL https://rpm.nodesource.com/setup_lts.x | sudo bash -
+            echo "------------npm------------"
             sudo apt install npm
             echo yes | sudo npm install -g @angular/cli
             sudo ng build --prod
