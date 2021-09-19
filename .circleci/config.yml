@@ -6,7 +6,7 @@ orbs:
   # so you dont have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
   python: circleci/python@1.2
-
+  aws-cli: circleci/aws-cli@2.0.3
 workflows:
   sample:  # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run. 
@@ -31,33 +31,40 @@ jobs:
     steps:
       - checkout
       - run:
-          name: 環境構築 + テスト
+          name: ビルド
           # This assumes pytest is installed via the install-package step above
           command: |
-            echo "環境構築 + テスト"
+            echo "環境構築 + ビルド"
             eval "$(pyenv init -)"
             eval "$(pyenv virtualenv-init -)"
             pyenv virtualenv 3.6.14 website
             pyenv activate website
             pip install -r requirements.txt
-            apt install nodejs
-            apt install npm
-            npm install -g @angular/cli
-            ng build --prod
-            python main.py
+            echo "pyenv finish"
+            echo "------------nodejs------------"
+            curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+            sudo apt install -y nodejs
+            echo "------------angular install------------"
+            echo yes | sudo npm install --save-dev -g @angular/cli@12.0.0
+            echo "------------angular fix------------"
+            npm audit fix --force
+            echo "------------ng build---------"
+            ng --version
+            sudo ng update @angular/core --allow-dirty --force
+            sudo ng build --configuration production
       - run:
           name: パッケージ作成
           command: |
             echo "デプロイパッケージ作成"
-            pip list
             zappa package -o myweb_handler.zip
-      
+
+      - aws-cli/install
+      - aws-cli/setup:
+          aws-access-key-id: aws_access_key_id
+          aws-region: region
+          aws-secret-access-key: aws_secret_access_key
       - run:
           name: デプロイ
           command: |
             echo "aws認証 + アップロード"
-            export aws_access_key_id=$aws_access_key_id
-            export aws_secret_access_key=$aws_secret_access_key
-            export region=$region
-            export output=$output
             aws lambda update-function-code --function-name mywebsite-dev --zip-file fileb://myweb_handler.zip
