@@ -62,6 +62,8 @@ jobs:
           name: デプロイ
           command: |
             echo "aws認証 + アップロード"
+            eval "$(pyenv init -)"
+            eval "$(pyenv virtualenv-init -)"
             pyenv activate website
             export aws_access_key_id=$aws_access_key_id
             export aws_secret_access_key=$aws_secret_access_key
