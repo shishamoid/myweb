@@ -47,7 +47,7 @@ jobs:
             echo "------------angular install------------"
             echo yes | sudo npm install --save-dev -g @angular/cli@12.0.0
             echo "------------angular fix------------"
-            sudo npm audit fix --force
+            npm audit fix --force
             echo "------------ng build---------"
             ng --version
             sudo ng update @angular/core --allow-dirty --force
