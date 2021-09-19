@@ -13,7 +13,6 @@ workflows:
     # For more details on extending your workflow, see the configuration docs: https://circleci.com/docs/2.0/configuration-reference/#workflows 
     jobs:
       - build
-      - deploy
 
 jobs:
   build:  # This is the name of the job, feel free to change it to better match what you're trying to do!
@@ -59,11 +58,6 @@ jobs:
             echo "デプロイパッケージ作成"
             zappa package -o myweb_handler.zip
 
-  deploy:
-    docker:
-      # replace with your preferred image
-      - image: cimg/base:stable
-    steps:
       - aws-cli/install
       - aws-cli/setup:
           aws-access-key-id: aws_access_key_id
