@@ -64,14 +64,13 @@ jobs:
       # replace with your preferred image
       - image: cimg/base:stable
     steps:
-      - aws-cli/install:
-          version: '1.18.214' 
+      - aws-cli/install
+      - aws-cli/setup:
+          aws-access-key-id: aws_access_key_id
+          aws-region: region
+          aws-secret-access-key: aws_secret_access_key
       - run:
           name: デプロイ
           command: |
             echo "aws認証 + アップロード"
-            export aws_access_key_id=$aws_access_key_id
-            export aws_secret_access_key=$aws_secret_access_key
-            export region=$region
-            export output=$output
             aws lambda update-function-code --function-name mywebsite-dev --zip-file fileb://myweb_handler.zip
