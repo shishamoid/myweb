@@ -31,10 +31,10 @@ jobs:
     steps:
       - checkout
       - run:
-          name: 環境構築 + テスト
+          name: ビルド
           # This assumes pytest is installed via the install-package step above
           command: |
-            echo "環境構築 + テスト"
+            echo "環境構築 + ビルド"
             eval "$(pyenv init -)"
             eval "$(pyenv virtualenv-init -)"
             pyenv virtualenv 3.6.14 website
@@ -52,12 +52,10 @@ jobs:
             ng --version
             sudo ng update @angular/core --allow-dirty --force
             sudo ng build --configuration production
-            python main.py
       - run:
           name: パッケージ作成
           command: |
             echo "デプロイパッケージ作成"
-            pip list
             zappa package -o myweb_handler.zip
       
       - run:
