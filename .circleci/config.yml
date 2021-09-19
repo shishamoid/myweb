@@ -49,7 +49,7 @@ jobs:
             echo "------------angular fix------------"
             npm audit fix --force
             echo "------------ng build---------"
-            sudo ng build --prod
+            sudo ng build --configuration production
             python main.py
       - run:
           name: パッケージ作成
