@@ -42,11 +42,12 @@ jobs:
             pip install -r requirements.txt
             echo "pyenv finish"
             echo "------------nodejs------------"
-            curl -fsSL https://deb.nodesource.com/setup_15.x | sudo -E bash -
+            curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
             sudo apt install -y nodejs
-            echo "------------ng------------"
+            echo "------------angular install------------"
             echo yes | sudo npm install --save-dev -g @angular/cli
             npm audit fix --force
+            echo "------------ng build---------"
             sudo ng build --prod
             python main.py
       - run:
