@@ -45,10 +45,12 @@ jobs:
             curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
             sudo apt install -y nodejs
             echo "------------angular install------------"
-            echo yes | sudo npm install --save-dev -g @angular/cli@11.0.2
+            echo yes | sudo npm install --save-dev -g @angular/cli@12.0.0
             echo "------------angular fix------------"
-            npm audit fix --force
+            sudo npm audit fix --force
             echo "------------ng build---------"
+            ng --version
+            sudo ng update @angular/core --allow-dirty --force
             sudo ng build --configuration production
             python main.py
       - run:
