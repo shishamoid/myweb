@@ -44,8 +44,9 @@ jobs:
             echo "------------nodejs------------"
             curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
             sudo apt install -y nodejs
-            echo "------------npm------------"
-            echo yes | sudo npm install -g @angular/cli
+            echo "------------ng------------"
+            echo yes | sudo npm install --save-dev -g @angular/cli
+            npm audit fix --force
             sudo ng build --prod
             python main.py
       - run:
