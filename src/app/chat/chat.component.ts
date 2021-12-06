@@ -308,7 +308,6 @@ export class ChatComponent implements OnInit {
       this.chatarray = this.lender_chat(response)
       this.connectstatus = true
       this.startchat(this.roomname)
-      //this.scroll()
     }
     catch{
       ;
@@ -342,10 +341,8 @@ export class ChatComponent implements OnInit {
   }
   scroll(){
     let target  = document.getElementById("lastchat")
-    //let target = this.lastchat;
     if(target){
       target.scrollTop = target.scrollHeight;
-      //target.scrollIntoView(false)
     }
   }
 
