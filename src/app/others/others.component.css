@@ -6,6 +6,7 @@
   .architecture{
     width: 60%;
     margin: auto;
+    max-width: 1500px;
   }
 }
 @media screen and (max-width: 960px){

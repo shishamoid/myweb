@@ -8,7 +8,6 @@
     width: 50%;
     margin: auto;
   }
-	/* 960px以上に適用されるCSS（PC用） */
 }
 
 .contents mat-icon{
@@ -16,7 +15,6 @@
   font-size: 500%;
   margin:auto;
 }
-
 
 .contents{
   width: 90%;

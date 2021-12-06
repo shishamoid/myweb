@@ -3,10 +3,10 @@ from flask import Flask,request,jsonify,make_response,render_template,send_file
 
 from flask_cors import CORS
 import json
-import hashlib
 import logging
 
 logging.basicConfig(level=logging.INFO)
+
 import random, string
 
 app = Flask(__name__, static_url_path='', static_folder='dist/myweb',template_folder="dist/myweb")
