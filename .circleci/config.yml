@@ -45,7 +45,8 @@ jobs:
       - run:
           name: npm環境
           command: |
-            echo "------------nodejs install------------"
+
+            echo "------------nodejs install ------------"
             curl -fsSL https://deb.nodesource.com/setup_12.x | sudo -E bash -
             sudo apt install -y nodejs
             echo "------------angular install------------"

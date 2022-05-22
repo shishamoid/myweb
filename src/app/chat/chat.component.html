@@ -45,7 +45,7 @@
   </form>
 
 
-  <form [formGroup] = "roomnameform" (ngSubmit) = "connectchat(roomnameform.value,requesttype)" *ngIf="requesttype=='create'" fxLayout="column">
+  <form [formGroup] = "roomnameform" (ngSubmit) = "Connectchat(roomnameform.value,requesttype)" *ngIf="requesttype=='create'" fxLayout="column">
     <mat-form-field fxFlex="100%">
       <mat-label>新規グループ名(最大20文字)</mat-label>
       <input matInput id="requestroom" type="text" formControlName="roomname">
@@ -72,10 +72,9 @@
       <div id="lastchat"></div>
 
     </div>
-    <form [formGroup] = "chatform" (ngSubmit)= "sendmessage(chatform.value)" *ngIf="connectstatus" class="send_form"  fxLayout="row">
+    <form [formGroup] = "chatform" (ngSubmit)= "Sendmessage(chatform.value)" *ngIf="connectstatus" class="send_form"  fxLayout="row">
         <input class="send_text" formControlName="chatmessage">
         <button type= "submit" class="send_button">送信</button>
         </form>
 
   </div>
-<!--<div>{{subject}}</div>-->

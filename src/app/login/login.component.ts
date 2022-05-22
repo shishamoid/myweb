@@ -57,51 +57,6 @@ export class LoginComponent implements OnInit {
       ngOnInit(){
       }
 
-   http_request(newusername : String,newpassword:String,type:String){
-     if(type=="connect"){
-       return this.apollo.query<any>({
-         query: authuser,
-         variables: {
-           username:newusername,
-           password:newpassword
-        },
-       })
-     }
-     else if(type=="create"){
-       return this.apollo.mutate<any>({
-         mutation: createuser,
-         variables: {
-           username:newusername,
-           password:newpassword
-        },
-       })
-     }
-     else{
-       return "TypeError"
-     }
-   }
-
-   check_login(response_message :any,username:String){
-     console.log(response_message)
-     if(response_message=="ログイン成功"){
-       this.router.navigate(["/chat"],{queryParams:{username : `${username}`}})
-     }else if(response_message=="ログイン失敗"){
-       alert("名前、パスワードが違います")
-     }else{
-       alert(response_message)
-     }
-   }
-
-   create_check(response_message:String){
-     if(response_message == "ユーザーが作成されました"){
-       alert("新規ユーザが作成されました。\nログインしてください！")
-     }else if(response_message=="ユーザーがすでにいます"){
-       alert("ユーザーがすでにいます。\n別の名前でつくってください")
-     }else{
-       alert(response_message)
-     }
-   }
-
    formcheck(username:String,password:String){
      if(username==""){
        return "名前を入力してください"
@@ -126,7 +81,7 @@ export class LoginComponent implements OnInit {
      }
    }
 
-   create_or_login(data:logininfo){
+   Create_or_Login(data:logininfo){
       var formstatus = this.formcheck(data.username,data.password)
       var username = data.username
       var password = data.password
@@ -151,7 +106,6 @@ export class LoginComponent implements OnInit {
            }
          }).subscribe(response => {alert("作成できました")},error => {console.log(error),alert("作成できませんでした")})
         }
-        //this.http_request(data.username,data.password,this.requesttype)
       }else{
         alert(formstatus)
     }
