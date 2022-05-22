@@ -27,7 +27,7 @@
     </mat-radio-button>
   </mat-radio-group>
 
-    <form [formGroup]="roomnameform" (ngSubmit)="connectchat(roomnameform.value,requesttype)" *ngIf="requesttype=='connect'" fxLayout="column">
+    <form [formGroup]="roomnameform" (ngSubmit)="Connectchat(roomnameform.value,requesttype)" *ngIf="requesttype=='connect'" fxLayout="column">
       <mat-form-field fxFlex="100%">
         <mat-label for="roomname">
         グループ名を入力
