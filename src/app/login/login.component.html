@@ -15,7 +15,7 @@
 
 <div fxLayout="column" fxLayoutAlign="center" class="form_area">
 
-<form [formGroup]="loginform" (ngSubmit)="create_or_login(loginform.value)">
+<form [formGroup]="loginform" (ngSubmit)="Create_or_Login(loginform.value)">
 
   <div fxLayout="row" class="select_button">
   <mat-radio-group name="requestform" [(ngModel)]="requesttype" [ngModelOptions]="{standalone: true}">
